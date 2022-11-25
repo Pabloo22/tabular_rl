@@ -31,7 +31,7 @@ class CoinFlipEnv(TabEnv):
         #     - if 1 coin has been flipped: 2 states, 0 heads or 1 head
         #     - if 2 coins have been flipped: 3 states, 0 heads, 1 head or 2 heads
         #     - if 3 coins have been flipped: 4 states, 0 heads, 1 head, 2 heads or 3 heads
-        #     - etc
+        #     - etc.
         # We can see that the number of states is equal to the sum of the number of states for each amount of coins.
         # Now, if we want to take into account the number of coins left, we need to multiply the number of states
         # computed above by the sum of possible quantities of coins left. Thanks to the fact that the number of coins
