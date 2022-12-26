@@ -1,0 +1,1 @@
+from coin_flip_cheaters import CoinFlipCheaters

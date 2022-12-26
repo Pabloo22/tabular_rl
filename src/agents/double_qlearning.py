@@ -5,7 +5,7 @@ from src.base import Agent
 from src.base import TabEnv
 
 
-class DoubleQLearningAgent(Agent):
+class DoubleQLearning(Agent):
     """
     Double Q-Learning is an algorithm that solves particular issues in Q-Learning, especially when Q-Learning can be
     tricked to take the bad action based on some positive rewards, while the expected reward of this action is
@@ -59,9 +59,6 @@ class DoubleQLearningAgent(Agent):
         else:
             raise ValueError("Either use_a or use_b must be True.")
 
-        valid_actions = self.env.valid_actions(obs)
-        if action not in valid_actions:
-            action = self.random_state.choice(valid_actions)
         return action
 
     def initialize_q_values(self):

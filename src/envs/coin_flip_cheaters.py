@@ -6,7 +6,7 @@ import tqdm
 from src.base import TabEnv
 
 
-class CoinFlipEnv(TabEnv):
+class CoinFlipCheaters(TabEnv):
     metadata = {"render_modes": ["ansi"]}
 
     def __init__(self,
