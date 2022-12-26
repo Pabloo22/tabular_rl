@@ -33,10 +33,10 @@ class JacksRental(TabEnv):
         max_n_moved_cars: Maximum number of cars that can be moved between the two locations.
         expected_rental_requests: Expected number of rental requests at the first and second locations.
         expected_rental_returns: Expected number of cars returned to the first and second locations.
-        reward: Reward for each rented car.
-        cost: Cost for moving a car.
+        rental_credit: Reward for each rented car.
+        cost_of_moving: Cost for moving a car.
         initial_state: Initial number of cars at each location.
-        max_episode_length: Maximum number of steps in an episode. If it is less than 1, then there is no limit.
+        max_episode_length: Maximum number of steps in an episode. If it is `None`, the episode length is unlimited.
         discount: Discount factor.
         seed: Seed for the random number generator.
     """
@@ -44,12 +44,12 @@ class JacksRental(TabEnv):
     def __init__(self,
                  max_n_cars: int = 20,
                  max_n_moved_cars: int = 5,
-                 expected_rental_requests: Sequence[int, int] = (3, 4),
-                 expected_rental_returns: Sequence[int, int] = (3, 2),
-                 reward: float = 10,
-                 cost: float = 2,
+                 expected_rental_requests: Sequence = (3, 4),
+                 expected_rental_returns: Sequence = (3, 2),
+                 rental_credit: float = 10,
+                 cost_of_moving: float = 2,
                  initial_state: Tuple[int, int] = (10, 10),
-                 max_episode_length: int = 10,
+                 max_episode_length: int = None,
                  discount: float = 0.9,
                  seed: int = None):
 
@@ -57,11 +57,11 @@ class JacksRental(TabEnv):
         self.max_n_moved_cars = max_n_moved_cars
         self.expected_rental_requests = np.array(expected_rental_requests)
         self.expected_rental_returns = np.array(expected_rental_returns)
-        self.reward = reward
-        self.cost = cost
+        self.rental_credit = rental_credit
+        self.cost_of_moving = cost_of_moving
         self.initial_state: Tuple[int, int] = initial_state
         self.discount = discount
-        self.max_episode_length = max_episode_length
+        self.max_episode_length = max_episode_length if max_episode_length is not None else float("inf")
         self.n_steps = 0
         self.seed = seed
 
@@ -73,26 +73,8 @@ class JacksRental(TabEnv):
 
         np.random.seed(seed)
 
-    def _move_cars(self, action: int) -> None:
-        """Move cars from one location to another.
-
-        Arguments:
-            action: Action to perform:
-                0: Move `max_n_moved_cars` cars from the first location to the second location.
-                1: Move `max_n_moved_cars` - 1 cars from the first location to the second location.
-                ...
-                max_n_moved_cars - 1: Move 1 car from the first location to the second location.
-                max_n_moved_cars: Do not move any cars.
-                max_n_moved_cars + 1: Move 1 car from the second location to the first location.
-                ...
-                2 * max_n_moved_cars: Move `max_n_moved_cars` from the second location to the first location.
-        """
-        n_moved_cars = action - self.max_n_moved_cars
-        self.cars[0] += n_moved_cars
-        self.cars[1] -= n_moved_cars
-
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, dict]:
-        """Perform an action in the environment.
+        """Performs an action in the environment.
 
         Arguments:
             action: Action to perform:
@@ -105,7 +87,7 @@ class JacksRental(TabEnv):
                 ...
                 2 * max_n_moved_cars: Move `max_n_moved_cars` from the second location to the first location.
         """
-        reward = 0.
+        reward = 0
 
         # Move cars
         n_moved_cars = action - self.max_n_moved_cars
@@ -113,14 +95,14 @@ class JacksRental(TabEnv):
         self.cars[1] -= n_moved_cars
 
         # Cost for moving cars
-        reward -= self.cost * abs(n_moved_cars)
+        reward -= self.cost_of_moving * abs(n_moved_cars)
 
         # Rent cars
         requests = np.random.poisson(self.expected_rental_requests)
         for i, request in enumerate(requests):
             cars_rented = min(self.cars[0], request)
             self.cars[i] -= cars_rented
-            reward += self.reward * cars_rented
+            reward += self.rental_credit * cars_rented
 
         # Return cars
         returns = np.random.poisson(self.expected_rental_returns)
@@ -134,11 +116,11 @@ class JacksRental(TabEnv):
         return tuple(self.cars), reward, done, None
 
     def obs2int(self, observation: Tuple[int, int]) -> int:
-        """Convert a state to an integer."""
+        """Converts a state to an integer."""
         return observation[0] * (self.max_n_cars + 1) + observation[1]
 
     def reset(self) -> Tuple[int, int]:
-        """Reset the environment."""
+        """Resets the environment."""
         self.cars = list(self.initial_state)
         self.n_steps = 0
         return self.initial_state
@@ -150,3 +132,5 @@ class JacksRental(TabEnv):
         print(f"Number of cars in second location: {cars_in_second_location}")
         print("-" * 50)
 
+        if self.n_steps == self.max_episode_length:
+            print("Episode done")

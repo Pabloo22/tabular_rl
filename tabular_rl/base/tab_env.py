@@ -37,9 +37,8 @@ class TabEnv(abc.ABC):
         """
         pass
 
-    @staticmethod
     @abc.abstractmethod
-    def obs2int(observation: any) -> int:
+    def obs2int(self, observation: any) -> int:
         """Convert a state to an integer.
 
         Args:
@@ -52,7 +51,9 @@ class TabEnv(abc.ABC):
 
     def render(self):
         """Renders the environment."""
-        raise NotImplementedError
+
+    def set_transition_probability_matrix(self):
+        """Sets the transition probability matrix."""
 
     def play(self, player: Callable[[any], int], verbose: bool = True) -> float:
         """Plays the game with the agent.

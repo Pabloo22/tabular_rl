@@ -1,7 +1,5 @@
 from gym import spaces
 import numpy as np
-from typing import Callable
-import tqdm
 
 from tabular_rl.base import TabEnv
 
@@ -142,50 +140,7 @@ class CoinFlipCheaters(TabEnv):
                 label = "a cheater" if self._cheater else "fair"
                 print(f"The bob was {label}!")
 
-    def close(self):
-        raise NotImplementedError()
-
-    def play(self, player: Callable[[spaces.Dict], int], n_episodes: int = 1, verbose: bool = True):
-        """Plays the game with the agent.
-
-        Args:
-            player: The agent or function to evaluate.
-            n_episodes: The number of episodes to evaluate the agent.
-            verbose: Whether to print the results.
-        """
-        total_reward = 0
-        for _ in range(n_episodes):
-            obs = self.reset()
-            terminated = False
-            while not terminated:
-                action = player(obs)
-                obs, reward, terminated, truncated, info = self.step(action)
-                total_reward += reward
-                if verbose:
-                    self.render(terminated=terminated)
-
-        return total_reward
-
-    def compute_avg_score(self, agent: Callable[[spaces.Dict], int], n_episodes: int = 10_000):
-        """Computes the average score of the agent.
-
-        Args:
-            agent: The agent or function to evaluate.
-            n_episodes: The number of episodes to evaluate the agent.
-        """
-        total_reward = 0
-        for _ in tqdm.tqdm(range(n_episodes), desc="Computing average score"):
-            obs = self.reset()
-            terminated = False
-            while not terminated:
-                action = agent(obs)
-                obs, reward, terminated, truncated, info = self.step(action)
-                total_reward += reward
-
-        return total_reward / n_episodes
-
-    @staticmethod
-    def obs2int(obs) -> int:
+    def obs2int(self, obs) -> int:
         """Converts an observation to an integer."""
         percentage_heads, n_coin_flips = obs["heads"][0], obs["n_coin_flips"]
         n_heads = round(percentage_heads * n_coin_flips)
