@@ -3,7 +3,7 @@ import numpy as np
 from typing import Callable
 import tqdm
 
-from src.base import TabEnv
+from tabular_rl.base import TabEnv
 
 
 class CoinFlipCheaters(TabEnv):
@@ -145,11 +145,11 @@ class CoinFlipCheaters(TabEnv):
     def close(self):
         raise NotImplementedError()
 
-    def play(self, agent: Callable[[spaces.Dict], int], n_episodes: int = 1, verbose: bool = True):
+    def play(self, player: Callable[[spaces.Dict], int], n_episodes: int = 1, verbose: bool = True):
         """Plays the game with the agent.
 
         Args:
-            agent: The agent or function to evaluate.
+            player: The agent or function to evaluate.
             n_episodes: The number of episodes to evaluate the agent.
             verbose: Whether to print the results.
         """
@@ -158,7 +158,7 @@ class CoinFlipCheaters(TabEnv):
             obs = self.reset()
             terminated = False
             while not terminated:
-                action = agent(obs)
+                action = player(obs)
                 obs, reward, terminated, truncated, info = self.step(action)
                 total_reward += reward
                 if verbose:

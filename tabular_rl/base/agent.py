@@ -1,6 +1,6 @@
 import abc
 
-from tab_env import TabEnv
+from .tab_env import TabEnv
 
 
 class Agent(abc.ABC):
@@ -9,8 +9,8 @@ class Agent(abc.ABC):
         self.env = env
 
     @abc.abstractmethod
-    def select_action(self, obs, **kwargs) -> int:
+    def select_action(self, obs) -> int:
         pass
 
-    def __call__(self, obs, **kwargs):
-        return self.select_action(obs, **kwargs)
+    def __call__(self, obs) -> int:
+        return self.select_action(obs)

@@ -9,7 +9,7 @@ class DoubleQLearning(RLAgent):
     Double Q-Learning is an algorithm that solves particular issues in Q-Learning, especially when Q-Learning can be
     tricked to take the bad action based on some positive rewards, while the expected reward of this action is
     guaranteed to be negative.
-    It does that by maintaining two Q-Value lists each updating itself from the other. In short it finds the action
+    It does that by maintaining two Q-Value lists each updating itself from the other. In short, it finds the action
     that maximizes the Q-Value in one list, but instead of using this Q-Value, it uses the action to get a Q-Value
     from the other list.
 
@@ -23,14 +23,14 @@ class DoubleQLearning(RLAgent):
                  step_size: float = 0.1,
                  init_method: str or int or float = "zeros",
                  seed: int = None,
-                 max_reward: float = 1.0,
-                 min_reward: float = -1.0):
+                 max_reward: float = 1.,
+                 min_reward: float = -1.):
 
         super().__init__(env)
         self.epsilon = epsilon
         self.discount = discount
         self.step_size = step_size
-        self.random_state = np.random.RandomState(seed)
+        self._random_state = np.random.RandomState(seed)
         self.init_method = init_method
 
         self.q_a_ = None
@@ -40,14 +40,14 @@ class DoubleQLearning(RLAgent):
         self.min_reward = min_reward
 
     def normalize_reward(self, reward: float):
-        """Normalizes the reward to be between 0 and 1."""
+        """Normalizes the reward to be between 0 and 1"""
         return (reward - self.min_reward) / (self.max_reward - self.min_reward)
 
     def select_action(self, obs: tuple, training: bool = False, use_a: bool = True, use_b: bool = True) -> int:
         """Selects an action to perform in the current state."""
         state_num = self.env.obs2int(obs)
-        if training and self.random_state.rand() < self.epsilon:
-            action = self.random_state.randint(0, self.env.n_actions)
+        if training and self._random_state.rand() < self.epsilon:
+            action = self._random_state.randint(0, self.env.n_actions)
         elif use_a and use_b:
             q = (self.q_a_[state_num] + self.q_b_[state_num]) / 2
             action = int(np.argmax(q))
@@ -66,14 +66,14 @@ class DoubleQLearning(RLAgent):
             self.q_a_ = np.zeros((self.env.n_states, self.env.n_actions))
             self.q_b_ = np.zeros((self.env.n_states, self.env.n_actions))
         elif self.init_method == "uniform":
-            self.q_a_ = self.random_state.uniform(0, 1, (self.env.n_states, self.env.n_actions))
-            self.q_b_ = self.random_state.uniform(0, 1, (self.env.n_states, self.env.n_actions))
+            self.q_a_ = self._random_state.uniform(0, 1, (self.env.n_states, self.env.n_actions))
+            self.q_b_ = self._random_state.uniform(0, 1, (self.env.n_states, self.env.n_actions))
         elif self.init_method == "random":
-            self.q_a_ = self.random_state.normal(0, 1, (self.env.n_states, self.env.n_actions))
-            self.q_b_ = self.random_state.normal(0, 1, (self.env.n_states, self.env.n_actions))
+            self.q_a_ = self._random_state.normal(0, 1, (self.env.n_states, self.env.n_actions))
+            self.q_b_ = self._random_state.normal(0, 1, (self.env.n_states, self.env.n_actions))
         elif isinstance(self.init_method, int) or isinstance(self.init_method, float):
-            self.q_a_ = self.random_state.normal(self.init_method, 1, (self.env.n_states, self.env.n_actions))
-            self.q_b_ = self.random_state.normal(self.init_method, 1, (self.env.n_states, self.env.n_actions))
+            self.q_a_ = self._random_state.normal(self.init_method, 1, (self.env.n_states, self.env.n_actions))
+            self.q_b_ = self._random_state.normal(self.init_method, 1, (self.env.n_states, self.env.n_actions))
         else:
             raise ValueError("init_method must be either 'zeros', 'uniform', 'random', or a number.")
 
@@ -97,7 +97,7 @@ class DoubleQLearning(RLAgent):
                 new_obs, reward, done, _ = self.env.step(action)
                 reward = self.normalize_reward(reward)
                 next_state = self.env.obs2int(new_obs)
-                update_a = self.random_state.rand() < 0.5
+                update_a = self._random_state.rand() < 0.5
                 if update_a:
                     a_star = self.select_action(new_obs, training=False, use_b=False)
                     target = reward + self.discount * self.q_b_[next_state, a_star]
