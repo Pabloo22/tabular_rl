@@ -1,17 +1,15 @@
 import abc
-import gym
 
 
-class TabEnv(gym.Env, metaclass=abc.ABCMeta):
+class TabEnv(abc.ABC):
     """Abstract base class for tabular environments."""
 
     n_states: int
     n_actions: int
 
-    def __init__(self, n_states: int, n_actions: int):
-        super(gym.Env, self).__init__()
-        self.n_states: int = n_states
-        self.n_actions: int = n_actions
+    def __init__(self):
+        self.n_states = -1
+        self.n_actions = -1
 
     @abc.abstractmethod
     def step(self, action: int) -> tuple:

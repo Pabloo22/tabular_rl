@@ -1,11 +1,10 @@
 import numpy as np
 import tqdm
 
-from src.base import Agent
-from src.base import TabEnv
+from tabular_rl.base import TabEnv, RLAgent
 
 
-class DoubleQLearning(Agent):
+class DoubleQLearning(RLAgent):
     """
     Double Q-Learning is an algorithm that solves particular issues in Q-Learning, especially when Q-Learning can be
     tricked to take the bad action based on some positive rewards, while the expected reward of this action is
@@ -116,7 +115,7 @@ class DoubleQLearning(Agent):
         """Saves the agent to the given path."""
         np.savez(path, q_a=self.q_a_, q_b=self.q_b_)
 
-    def load(self, path: str):
+    def load_learning(self, path: str):
         """Loads the agent from the given path."""
         data = np.load(path)
         self.q_a_ = data["q_a"]
