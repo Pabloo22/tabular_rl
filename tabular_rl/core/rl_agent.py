@@ -1,7 +1,9 @@
 import abc
+from typing import Union
 
 from .agent import Agent
 from .tab_env import TabEnv
+from .markov_decision_proccess import MarkovDecisionProcess
 
 
 class RLAgent(Agent):
@@ -11,7 +13,7 @@ class RLAgent(Agent):
     This differs from a rule-based agent, which can be used right away.
     """
 
-    def __init__(self, env: TabEnv):
+    def __init__(self, env: Union[TabEnv, MarkovDecisionProcess] = None):
         super().__init__(env)
 
     @abc.abstractmethod
