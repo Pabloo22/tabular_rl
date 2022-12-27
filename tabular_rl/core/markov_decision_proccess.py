@@ -9,15 +9,15 @@ class MarkovDecisionProcess:
     Arguments:
         n_states: Number of states.
         n_actions: Number of actions.
-        transition_probabilities: Transition probabilities. A numpy array of shape (n_states, n_actions, n_states).
-        reward_function: Reward function. A numpy array of shape (n_states, n_actions, n_states).
+        transition_probabilities_matrix: Transition probabilities. A numpy array of shape (n_states, n_actions, n_states).
+        immediate_reward_matrix: Reward function. A numpy array of shape (n_states, n_actions, n_states).
         discount: Discount factor. A float in [0, 1).
     """
 
     n_states: int
     n_actions: int
-    transition_probabilities: np.ndarray
-    reward_function: np.ndarray
+    transition_probabilities_matrix: np.ndarray
+    immediate_reward_matrix: np.ndarray
     discount: float
 
 
