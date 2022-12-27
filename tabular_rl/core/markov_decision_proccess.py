@@ -2,7 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class MarkovDecisionProcess:
     """A Markov Decision Process (MDP).
 
