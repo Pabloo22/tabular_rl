@@ -8,7 +8,7 @@ class DynamicProgramming(RLAgent):
     def __init__(self, mdp: MarkovDecisionProcess):
         super().__init__(mdp)
 
-    def select_action(self, obs) -> int:
+    def select_action(self, state: int) -> int:
         pass
 
     def fit(self) -> None:
