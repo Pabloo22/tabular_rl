@@ -119,6 +119,10 @@ class JacksRental(TabEnv):
         """Converts a state to an integer."""
         return observation[0] * (self.max_n_cars + 1) + observation[1]
 
+    def int2obs(self, state: int) -> Tuple[int, int]:
+        """Converts an integer to a state."""
+        return state // (self.max_n_cars + 1), state % (self.max_n_cars + 1)
+
     def reset(self) -> Tuple[int, int]:
         """Resets the environment."""
         self.cars = list(self.initial_state)
