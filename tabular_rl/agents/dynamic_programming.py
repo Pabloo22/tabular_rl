@@ -39,13 +39,13 @@ class DynamicProgramming(RLAgent):
 
     def fit(self,
             tol: float = 0.001,
-            max_evaluations: int = 1,
+            max_policy_evaluations: int = 1,
             max_iters: int = 100_000,
             use_tqdm: bool = True) -> None:
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 
-            values_stable = self.policy_evaluation(tol, max_evaluations)
+            values_stable = self.policy_evaluation(tol, max_policy_evaluations)
             policy_stable = self.policy_improvement()
 
             if values_stable and policy_stable:
