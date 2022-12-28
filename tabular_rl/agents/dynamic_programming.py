@@ -5,17 +5,28 @@ from tabular_rl.core import RLAgent, MarkovDecisionProcess
 
 class DynamicProgramming(RLAgent):
 
-    def __init__(self, env: MarkovDecisionProcess):
+    def __init__(self, env: MarkovDecisionProcess, init_method: np.ndarray = "zeros"):
         super().__init__(env)
-        self.state_value_array = None
-        self.policy = None
+        self.init_method = init_method
+        self.initialized = False
+        self.state_value_array_ = None
+        self.policy_ = None
 
     def select_action(self, state: int) -> int:
         pass
 
     def initialize(self) -> None:
-        self.state_value_array = np.zeros(mdp.n_states)
-        self.policy = np.zeros(mdp.n_states, dtype=int)
+
+        if self.init_method == "zeros":
+            self.state_value_array_ = np.zeros(self.env.n_states)
+        elif isinstance(self.init_method, float) or isinstance(self.init_method, int):
+            self.state_value_array_ = np.full(self.env.n_states, self.init_method)
+        else:
+            raise ValueError("Invalid init_method.")
+
+        self.policy_ = np.zeros(mdp.n_states, dtype=int)
+
+        self.initialized = True
 
     def policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> bool:
         pass
@@ -42,6 +53,8 @@ class DynamicProgramming(RLAgent):
             max_policy_evaluations: int = 1,
             max_iters: int = 100_000,
             use_tqdm: bool = True) -> None:
+
+        self.initialize()
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 
@@ -78,4 +91,4 @@ if __name__ == '__main__':
     mdp = MarkovDecisionProcess(3, 2, transition_probabilities, reward_function, 1)
     agent = DynamicProgramming(mdp)
     agent.fit()
-    print(agent.policy, agent.state_value_array)
+    print(agent.policy_, agent.state_value_array_)
