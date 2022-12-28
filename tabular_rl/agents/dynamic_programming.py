@@ -28,10 +28,10 @@ class DynamicProgramming(RLAgent):
 
         self.initialized = True
 
-    def policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> bool:
+    def _policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> bool:
         pass
 
-    def policy_improvement(self) -> bool:
+    def _policy_improvement(self) -> bool:
         pass
 
     # def fit(self, tol=0.001, max_evaluations=1, max_iters=100_000, use_tqdm=True) -> None:
@@ -58,8 +58,8 @@ class DynamicProgramming(RLAgent):
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 
-            values_stable = self.policy_evaluation(tol, max_policy_evaluations)
-            policy_stable = self.policy_improvement()
+            values_stable = self._policy_evaluation(tol, max_policy_evaluations)
+            policy_stable = self._policy_improvement()
 
             if values_stable and policy_stable:
                 break
