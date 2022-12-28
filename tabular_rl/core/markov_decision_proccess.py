@@ -1,24 +1,40 @@
 import numpy as np
-from dataclasses import dataclass
+
+from typing import Optional
 
 
-@dataclass
 class MarkovDecisionProcess:
     """A Markov Decision Process (MDP).
 
-    Arguments:
+    Args:
         n_states: Number of states.
         n_actions: Number of actions.
-        transition_probabilities_matrix: Transition probabilities. A numpy array of shape (n_states, n_actions, n_states).
-        immediate_reward_matrix: Reward function. A numpy array of shape (n_states, n_actions, n_states).
         discount: Discount factor. A float in [0, 1).
+        transition_matrix: Transition probabilities. A numpy array of shape (n_states, n_actions, n_states).
+        immediate_reward_matrix: Reward function. A numpy array of shape (n_states, n_actions, n_states).
+
     """
 
-    n_states: int
-    n_actions: int
-    transition_probabilities_matrix: np.ndarray
-    immediate_reward_matrix: np.ndarray
-    discount: float
+    def __init__(self,
+                 n_states: int,
+                 n_actions: int,
+                 discount: float = 0.99,
+                 transition_matrix: Optional[np.ndarray] = None,
+                 immediate_reward_matrix: Optional[np.ndarray] = None):
+        self.n_states = n_states
+        self.n_actions = n_actions
+        self.discount = discount
+
+        self._transition_matrix = transition_matrix
+        self._immediate_reward_matrix = immediate_reward_matrix
+
+    def get_transition_probabilities(self, state: int, action: int) -> np.ndarray:
+        """Returns the transition probabilities for the given state and action."""
+        return self._transition_matrix[action, state, :]
+
+    def get_immediate_reward(self, state: int, action: int) -> np.ndarray:
+        """Returns the expected immediate reward for the given state and action for all possible next states."""
+        return self._immediate_reward_matrix[action, state, :]
 
 
 if __name__ == "__main__":
