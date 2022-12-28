@@ -25,11 +25,11 @@ class CarRentalMDP(MarkovDecisionProcess):
     reward.
     """
 
-    def __init__(self, car_rental_env: CarRentalEnv, discount: float = 0.99):
+    def __init__(self, car_rental_env: CarRentalEnv):
 
         super().__init__(n_states=car_rental_env.n_states,
                          n_actions=car_rental_env.n_actions,
-                         discount=discount)
+                         discount=car_rental_env.discount)
 
         self.car_rental_env = car_rental_env
 
