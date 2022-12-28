@@ -35,8 +35,3 @@ class MarkovDecisionProcess:
     def get_immediate_reward(self, state: int, action: int) -> np.ndarray:
         """Returns the expected immediate reward for the given state and action for all possible next states."""
         return self._immediate_reward_matrix[action, state, :]
-
-
-if __name__ == "__main__":
-    mdp = MarkovDecisionProcess(1, 1, np.array([1]), np.array([1]), 1)
-    print(mdp)

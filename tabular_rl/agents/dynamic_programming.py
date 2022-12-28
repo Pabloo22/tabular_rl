@@ -54,7 +54,8 @@ class DynamicProgramming(RLAgent):
             max_iters: int = 100_000,
             use_tqdm: bool = True) -> None:
 
-        self.initialize()
+        if not self.initialized:
+            self.initialize()
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 

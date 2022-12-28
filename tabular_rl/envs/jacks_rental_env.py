@@ -1,11 +1,10 @@
 import numpy as np
-import scipy.stats as stats
-from typing import Tuple, List, Sequence
+from typing import Tuple, List, Sequence, Union
 
-from tabular_rl.base import TabEnv
+from tabular_rl.core import TabEnv
 
 
-class JacksRental(TabEnv):
+class JacksRentalEnv(TabEnv):
     """Environment for the Jack's Car Rental problem. (Example 4.2 in Sutton and Barto
      Reinforcement Learning: An Introduction)
 
@@ -34,7 +33,7 @@ class JacksRental(TabEnv):
         expected_rental_requests: Expected number of rental requests at the first and second locations.
         expected_rental_returns: Expected number of cars returned to the first and second locations.
         rental_credit: Reward for each rented car.
-        cost_of_moving: Cost for moving a car.
+        move_cost: Cost for moving a car.
         initial_state: Initial number of cars at each location.
         max_episode_length: Maximum number of steps in an episode. If it is `None`, the episode length is unlimited.
         discount: Discount factor.
@@ -47,18 +46,18 @@ class JacksRental(TabEnv):
                  expected_rental_requests: Sequence = (3, 4),
                  expected_rental_returns: Sequence = (3, 2),
                  rental_credit: float = 10,
-                 cost_of_moving: float = 2,
+                 move_cost: float = 2,
                  initial_state: Tuple[int, int] = (10, 10),
                  max_episode_length: int = None,
                  discount: float = 0.9,
                  seed: int = None):
 
         self.max_n_cars = max_n_cars
-        self.max_n_moved_cars = max_n_moved_cars
+        self.max_moves = max_n_moved_cars
         self.expected_rental_requests = np.array(expected_rental_requests)
         self.expected_rental_returns = np.array(expected_rental_returns)
         self.rental_credit = rental_credit
-        self.cost_of_moving = cost_of_moving
+        self.move_cost = move_cost
         self.initial_state: Tuple[int, int] = initial_state
         self.discount = discount
         self.max_episode_length = max_episode_length if max_episode_length is not None else float("inf")
@@ -72,6 +71,11 @@ class JacksRental(TabEnv):
         super().__init__(n_states, n_actions)
 
         np.random.seed(seed)
+
+    def move_cars(self, cars: Union[List[int], Tuple[int, int]], action: int) -> Tuple[int, int]:
+        """Returns a tuple of the number of cars in each location after moving cars."""
+        n_moves_first2second = action - self.max_moves
+        return cars[0] - n_moves_first2second, cars[1] + n_moves_first2second
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, dict]:
         """Performs an action in the environment.
@@ -89,13 +93,11 @@ class JacksRental(TabEnv):
         """
         reward = 0
 
-        # Move cars
-        n_moved_cars = action - self.max_n_moved_cars
-        self.cars[0] += n_moved_cars
-        self.cars[1] -= n_moved_cars
+        self.cars = list(self.move_cars(self.cars, action))
 
         # Cost for moving cars
-        reward -= self.cost_of_moving * abs(n_moved_cars)
+        n_moves = abs(action - self.max_moves)
+        reward -= self.move_cost * abs(n_moves)
 
         # Rent cars
         requests = np.random.poisson(self.expected_rental_requests)
@@ -111,7 +113,7 @@ class JacksRental(TabEnv):
 
         # Check if episode is done
         self.n_steps += 1
-        done = self.n_steps == self.max_episode_length
+        done = self.n_steps >= self.max_episode_length
 
         return tuple(self.cars), reward, done, None
 
@@ -138,3 +140,26 @@ class JacksRental(TabEnv):
 
         if self.n_steps == self.max_episode_length:
             print("Episode done")
+
+    def get_transition_matrix(self) -> np.ndarray:
+        """Returns the transition probability matrix.
+
+        Given a state s and an action a, the transition probability matrix gives the probability of reaching state s'
+        when taking action a in state s. It has shape (n_states, n_actions, n_states).
+
+        In this case, a state is a tuple (n_cars_first_location, n_cars_second_location). The probability of reaching
+        a state (i, j), if, after taking action the number of cars is (k, l), is given by the probability of reaching
+        i cars in the first location times the probability of ending with j cars in the second location when starting
+        from k and l cars respectively. We can multiply this two probabilities because they are independent.
+
+        Let $X$ be the number of cars requested and $Y$ the number of cars returned. $X$ follows a Poisson distribution
+        with parameter `expected_rental_requests[0]` $\lambda_1$, and $Y$ follows another one with parameter
+        `expected_rental_returns[1]` $\lambda_2$. To determine the probability of ending with i cars in the first
+        location when starting with k cars, we have derived the following formula:
+
+        Returns:
+            Transition probability matrix.
+        """
+
+
+
