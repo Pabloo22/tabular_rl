@@ -4,7 +4,7 @@ from typing import Tuple, List, Sequence, Union
 from tabular_rl.core import TabEnv
 
 
-class JacksRentalEnv(TabEnv):
+class CarRentalEnv(TabEnv):
     """Environment for the Jack's Car Rental problem. (Example 4.2 in Sutton and Barto
      Reinforcement Learning: An Introduction)
 
@@ -27,7 +27,10 @@ class JacksRentalEnv(TabEnv):
     at the end of the day, and the actions are the net numbers of cars moved
     between the two locations overnight.
 
-    Arguments:
+    The parameters written above are the default parameters. You can change them by passing them as arguments
+    to the constructor.
+
+    Args:
         max_n_cars: Maximum number of cars at each location.
         max_n_moved_cars: Maximum number of cars that can be moved between the two locations.
         expected_rental_requests: Expected number of rental requests at the first and second locations.
@@ -64,7 +67,7 @@ class JacksRentalEnv(TabEnv):
         self.n_steps = 0
         self.seed = seed
 
-        self.cars: List[int, int] = list(initial_state)
+        self.cars = list(initial_state)
 
         n_states = (max_n_cars + 1) ** 2
         n_actions = 2 * max_n_moved_cars + 1
@@ -74,13 +77,20 @@ class JacksRentalEnv(TabEnv):
 
     def move_cars(self, cars: Union[List[int], Tuple[int, int]], action: int) -> Tuple[int, int]:
         """Returns a tuple of the number of cars in each location after moving cars."""
-        n_moves_first2second = action - self.max_moves
-        return cars[0] - n_moves_first2second, cars[1] + n_moves_first2second
+        n_moves_first2second = self.max_moves - action
+        if n_moves_first2second < 0:
+            n_moves_first2second = -min(cars[1], -n_moves_first2second)
+        else:
+            n_moves_first2second = min(cars[0], n_moves_first2second)
 
-    def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, dict]:
+        cars_first_location = cars[0] - n_moves_first2second
+        cars_second_location = cars[1] + n_moves_first2second
+        return cars_first_location, cars_second_location
+
+    def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, None]:
         """Performs an action in the environment.
 
-        Arguments:
+        Args:
             action: Action to perform:
                 0: Move `max_n_moved_cars` cars from the first location to the second location.
                 1: Move `max_n_moved_cars` - 1 cars from the first location to the second location.
@@ -141,25 +151,21 @@ class JacksRentalEnv(TabEnv):
         if self.n_steps == self.max_episode_length:
             print("Episode done")
 
-    def get_transition_matrix(self) -> np.ndarray:
-        """Returns the transition probability matrix.
 
-        Given a state s and an action a, the transition probability matrix gives the probability of reaching state s'
-        when taking action a in state s. It has shape (n_states, n_actions, n_states).
+if __name__ == "__main__":
+    env = CarRentalEnv(max_episode_length=10)
 
-        In this case, a state is a tuple (n_cars_first_location, n_cars_second_location). The probability of reaching
-        a state (i, j), if, after taking action the number of cars is (k, l), is given by the probability of reaching
-        i cars in the first location times the probability of ending with j cars in the second location when starting
-        from k and l cars respectively. We can multiply this two probabilities because they are independent.
+    print("Actions:")
+    print(f"0: Move {env.max_moves} cars from the first location to the second location.")
+    print(f"1: Move {env.max_moves - 1} cars from the first location to the second location.")
+    print("...")
+    print(f"{env.max_moves - 1}: Move 1 car from the first location to the second location.")
+    print(f"{env.max_moves}: Do not move any cars.")
+    print(f"{env.max_moves + 1}: Move 1 car from the second location to the first location.")
+    print("...")
+    print(f"{2 * env.max_moves}: Move {env.max_moves} from the second location to the first location.")
 
-        Let $X$ be the number of cars requested and $Y$ the number of cars returned. $X$ follows a Poisson distribution
-        with parameter `expected_rental_requests[0]` $\lambda_1$, and $Y$ follows another one with parameter
-        `expected_rental_returns[1]` $\lambda_2$. To determine the probability of ending with i cars in the first
-        location when starting with k cars, we have derived the following formula:
+    def select_action(observation):
+        return int(input("Select action: "))
 
-        Returns:
-            Transition probability matrix.
-        """
-
-
-
+    print("Total reward:", env.play(select_action, verbose=True))

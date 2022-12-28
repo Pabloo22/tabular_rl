@@ -20,10 +20,10 @@ class RLAgent(Agent):
     def fit(self) -> None:
         """Trains the agent on the given environment."""
 
+    @abc.abstractmethod
     def save_learning(self, path: str) -> None:
         """Saves the learned parameters to a file."""
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def load_learning(self, path: str) -> None:
         """Loads the learned parameters from a file."""
-        raise NotImplementedError

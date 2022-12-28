@@ -1,2 +1,2 @@
-from jacks_rental_env import JacksRentalEnv
-from jacks_rental_mdp import JacksRentalMDP
+from car_rental_env import CarRentalEnv
+from car_rental_mdp import JacksRentalMDP

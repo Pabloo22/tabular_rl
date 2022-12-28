@@ -15,7 +15,7 @@ class TabEnv(abc.ABC):
 
     @abc.abstractmethod
     def step(self, action: int) -> Tuple[any, float, bool, Union[dict, None]]:
-        """Perform an action in the environment.
+        """Performs an action in the environment.
 
         Args:
             action: The action to perform.
@@ -24,7 +24,7 @@ class TabEnv(abc.ABC):
             observation: The observation of the environment.
             reward: The reward for the action.
             done: Whether the environment is done.
-            stats: The game stats.
+            info: Additional information.
         """
         pass
 
@@ -58,8 +58,8 @@ class TabEnv(abc.ABC):
     def play(self, player: Callable[[any], int], verbose: bool = True) -> float:
         """Plays the game with the agent.
         Args:
-            player: The agent or function to evaluate.
-            verbose: Whether to print the results.
+            player: An Agent or function that takes an observation and returns an action.
+            verbose: Whether to render each step.
 
         Returns:
             The total reward.

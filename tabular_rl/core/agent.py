@@ -12,7 +12,7 @@ class Agent(abc.ABC):
         """Initializes the agent.
 
         Args:
-            env: The environment the agent is interacting with.
+            env: The environment or MDP the agent is interacting with.
         """
         self.env = env
 
