@@ -15,7 +15,7 @@ class DynamicProgramming(RLAgent):
     def select_action(self, state: int) -> int:
         pass
 
-    def initialize(self) -> None:
+    def _initialize(self) -> None:
 
         if self.init_method == "zeros":
             self.state_value_array_ = np.zeros(self.env.n_states)
@@ -55,7 +55,7 @@ class DynamicProgramming(RLAgent):
             use_tqdm: bool = True) -> None:
 
         if not self.initialized:
-            self.initialize()
+            self._initialize()
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 
