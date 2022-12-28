@@ -70,18 +70,10 @@ class JacksRentalMDP(MarkovDecisionProcess):
             for new_state in range(self.n_states):
                 new_cars_first_location, new_cars_second_location = self.jacks_rental_env.int2obs(new_state)
 
-                probability_loc1 = transition_probs1[
-                    cars_first_location, new_cars_first_location
-                ]
-                expected_reward_loc1 = expected_rewards1[
-                    cars_first_location, new_cars_first_location
-                ]
-                probability_loc2 = transition_probs2[
-                    cars_second_location, new_cars_second_location
-                ]
-                expected_reward_loc2 = expected_rewards2[
-                    cars_second_location, new_cars_second_location
-                ]
+                probability_loc1 = transition_probs1[cars_first_location, new_cars_first_location]
+                expected_reward_loc1 = expected_rewards1[cars_first_location, new_cars_first_location]
+                probability_loc2 = transition_probs2[cars_second_location, new_cars_second_location]
+                expected_reward_loc2 = expected_rewards2[cars_second_location, new_cars_second_location]
 
                 self._transition_matrix_without_action[state, new_state] = probability_loc1 * probability_loc2
                 self._reward_matrix_without_action[state, new_state] = expected_reward_loc1 + expected_reward_loc2
