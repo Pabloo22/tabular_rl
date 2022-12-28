@@ -11,6 +11,7 @@ class DynamicProgramming(RLAgent):
         self.initialized = False
         self.state_value_array_ = None
         self.policy_ = None
+        self.q_value_array_ = None
 
     def select_action(self, state: int) -> int:
         pass
@@ -28,25 +29,29 @@ class DynamicProgramming(RLAgent):
 
         self.initialized = True
 
-    def _policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> bool:
-        pass
+    def _get_q_value(self, state: int, action: int) -> np.ndarray:
+        # sum(self.env.transition_probabilities_matrix[action, state, :] * (
+        #             self.env.immediate_reward_matrix[action, state, :] + self.env.discount * self.V0))), (
+        # self.env.n_states, self.env.n_actions)
+        transition_probabilities = self.env.get_transition_probabilities(state, action)
+        immediate_rewards = self.env.get_immediate_reward(state, action)
+        return np.sum(transition_probabilities * (immediate_rewards + self.env.discount * self.state_value_array_))
 
-    def _policy_improvement(self) -> bool:
-        pass
+    def _policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> None:
 
-    # def fit(self, tol=0.001, max_evaluations=1, max_iters=100_000, use_tqdm=True) -> None:
-    #
-    #     for _ in tqdm.tqdm(range(100), disable=not use_tqdm):
-    #
-    #         for _ in range(max_evaluations):
-    #             aux = np.fromfunction(np.vectorize(lambda state, action: sum(self.env.transition_probabilities_matrix[action,state,:]*(self.env.immediate_reward_matrix[action,state,:] + self.env.discount*self.V0))), (self.env.n_states, self.env.n_actions), dtype=int)
-    #             pi = np.fromfunction(np.vectorize(lambda s, a: (a == self.policy[s])), (mdp.n_states, self.env.n_actions), dtype=int)
-    #
-    #             self.V0 = np.ma.masked_array(aux, mask=np.logical_not(pi)).compressed()  # V_k+1
-    #         if np.array_equal(self.policy, aux.argmax(axis=1)):  # Si la politica no cambia, ha finalizado
-    #             break
-    #
-    #         self.policy = aux.argmax(axis=1)
+        mask = np.fromfunction(
+            np.vectorize(lambda state, action: self.policy_[state] == action),
+            (self.env.n_states, self.env.n_actions), dtype=int)
+
+        for _ in range(n_evaluations):
+            self.q_value_array_: np.ndarray = np.fromfunction(
+                np.vectorize(self._get_q_value), (self.env.n_states, self.env.n_actions)
+            )
+            old_state_value_array = self.state_value_array_.copy()
+            self.state_value_array_ = np.ma.masked_array(self.q_value_array_, mask=np.logical_not(mask)).compressed()
+
+            if np.abs(self.state_value_array_ - old_state_value_array).max() < tol:
+                break
 
     def fit(self,
             tol: float = 0.001,
@@ -59,10 +64,13 @@ class DynamicProgramming(RLAgent):
 
         for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
 
-            values_stable = self._policy_evaluation(tol, max_policy_evaluations)
-            policy_stable = self._policy_improvement()
+            old_state_value_array = self.state_value_array_.copy()
+            self._policy_evaluation(tol, max_policy_evaluations)
 
-            if values_stable and policy_stable:
+            # Policy improvement
+            self.policy_ = np.argmax(self.q_value_array_, axis=1)
+
+            if np.abs(self.state_value_array_ - old_state_value_array).max() < tol:
                 break
 
     def save_learning(self, path: str) -> None:
@@ -73,11 +81,11 @@ class DynamicProgramming(RLAgent):
 
 
 if __name__ == '__main__':
-    transition_probabilities = np.array([[[0.2, 0.5, 0.3],
-                                          [0, 0.5, 0.5],
-                                          [0, 0, 1]],
+    transition_probability_matrix = np.array([[[0.2, 0.5, 0.3],
+                                               [0, 0.5, 0.5],
+                                               [0, 0, 1]],
 
-                                         [[0.3, 0.6, 0.1],
+                                              [[0.3, 0.6, 0.1],
                                           [0.1, 0.6, 0.3],
                                           [0.05, 0.4, 0.55]]])
 
@@ -89,7 +97,7 @@ if __name__ == '__main__':
                                  [7, 4, 0],
                                  [6, 3, -2]]])
 
-    mdp = MarkovDecisionProcess(3, 2, transition_probabilities, reward_function, 1)
+    mdp = MarkovDecisionProcess(3, 2, transition_probability_matrix, reward_function, 1)
     agent = DynamicProgramming(mdp)
     agent.fit()
     print(agent.policy_, agent.state_value_array_)
