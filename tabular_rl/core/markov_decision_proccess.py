@@ -1,6 +1,7 @@
 import numpy as np
 
 from typing import Optional
+from .tab_env import TabEnv
 
 
 class MarkovDecisionProcess:
@@ -28,13 +29,15 @@ class MarkovDecisionProcess:
                  n_actions: int,
                  discount: float = 0.99,
                  transition_matrix: Optional[np.ndarray] = None,
-                 immediate_reward_matrix: Optional[np.ndarray] = None):
+                 immediate_reward_matrix: Optional[np.ndarray] = None,
+                 env: Optional[TabEnv] = None):
         self.n_states = n_states
         self.n_actions = n_actions
         self.discount = discount
 
         self._transition_matrix = transition_matrix
         self._immediate_reward_matrix = immediate_reward_matrix
+        self.env = env
 
     def get_transition_probabilities(self, state: int, action: int) -> np.ndarray:
         """Returns the transition probabilities for the given state and action."""

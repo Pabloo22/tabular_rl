@@ -1,7 +1,7 @@
 import numpy as np
 import tqdm
 
-from tabular_rl.base import TabEnv, RLAgent
+from tabular_rl.core import TabEnv, RLAgent
 
 
 class DoubleQLearning(RLAgent):
@@ -23,6 +23,7 @@ class DoubleQLearning(RLAgent):
                  step_size: float = 0.1,
                  init_method: str or int or float = "zeros",
                  seed: int = None,
+                 normalize_rewards: bool = False,
                  max_reward: float = 1.,
                  min_reward: float = -1.):
 
@@ -36,6 +37,7 @@ class DoubleQLearning(RLAgent):
         self.q_a_ = None
         self.q_b_ = None
         self.initialized = False
+        self.normalize_rewards = normalize_rewards
         self.max_reward = max_reward
         self.min_reward = min_reward
 
@@ -95,7 +97,7 @@ class DoubleQLearning(RLAgent):
             while not done:
                 action = self.select_action(obs, training=True)
                 new_obs, reward, done, _ = self.env.step(action)
-                reward = self.normalize_reward(reward)
+                reward = self.normalize_reward(reward) if self.normalize_rewards else reward
                 next_state = self.env.obs2int(new_obs)
                 update_a = self._random_state.rand() < 0.5
                 if update_a:

@@ -37,8 +37,9 @@ class DynamicProgramming(RLAgent):
         self.policy_ = None
         self.q_value_array_ = None
 
-    def select_action(self, state: int) -> int:
+    def select_action(self, obs: any) -> int:
         """Selects an action according to the policy."""
+        state = self.env.env.obs2int(obs)
         return self.policy_[state]
 
     def _initialize(self) -> None:
@@ -111,17 +112,28 @@ class DynamicProgramming(RLAgent):
 
 if __name__ == '__main__':
     from tabular_rl.envs import CarRentalMDP, CarRentalEnv
+    from tabular_rl.agents import DoubleQLearning
 
-    car_rental_env = CarRentalEnv()
+    car_rental_env = CarRentalEnv(max_episode_length=100)
     car_rental_mdp = CarRentalMDP(car_rental_env)
 
     agent = DynamicProgramming(car_rental_mdp)
-    agent.fit(tol=0.001, max_policy_evaluations=100000, max_iters=1)
+    agent.fit(tol=0.001, max_policy_evaluations=1, max_iters=1000)
     max_cars = car_rental_env.max_n_cars
     policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
     for state, action in enumerate(agent.policy_):
         n_cars_first_loc, n_cars_second_loc = np.unravel_index(state, policy.shape)
         policy[max_cars - n_cars_first_loc, n_cars_second_loc] = car_rental_env.max_moves - action
+    print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
+    print(policy)
+    print("-" * 100)
+    agent = DoubleQLearning(car_rental_env)
+    agent.fit(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
+    max_cars = car_rental_env.max_n_cars
+    policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
+    for cars1 in range(max_cars + 1):
+        for cars2 in range(max_cars + 1):
+            policy[max_cars - cars1, cars2] = car_rental_env.max_moves - agent.select_action((cars1, cars2))
 
     print(policy)
-
+    print(car_rental_env.evaluate_agent(agent, n_episodes=1000))

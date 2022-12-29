@@ -89,9 +89,15 @@ class CarRentalEnv(TabEnv):
             n_moves_first2second = min(cars_first_location, n_moves_first2second)
             n_moves_first2second = min(self.max_n_cars - cars_second_location, n_moves_first2second)
 
+
         # Check that the destination location has enough space
         cars_first_location -= n_moves_first2second
         cars_second_location += n_moves_first2second
+
+        if cars_first_location < 0 or cars_second_location < 0:
+            a = 1
+            b = 1
+
         return cars_first_location, cars_second_location
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, None]:
@@ -119,7 +125,7 @@ class CarRentalEnv(TabEnv):
         # Rent cars
         requests = np.random.poisson(self.expected_rental_requests)
         for i, request in enumerate(requests):
-            cars_rented = min(self.cars[0], request)
+            cars_rented = min(self.cars[i], request)
             self.cars[i] -= cars_rented
             reward += self.rental_credit * cars_rented
 
