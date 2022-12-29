@@ -78,13 +78,20 @@ class CarRentalEnv(TabEnv):
     def move_cars(self, cars: Union[List[int], Tuple[int, int]], action: int) -> Tuple[int, int]:
         """Returns a tuple of the number of cars in each location after moving cars."""
         n_moves_first2second = self.max_moves - action
-        if n_moves_first2second < 0:
-            n_moves_first2second = -min(cars[1], -n_moves_first2second)
-        else:
-            n_moves_first2second = min(cars[0], n_moves_first2second)
 
-        cars_first_location = cars[0] - n_moves_first2second
-        cars_second_location = cars[1] + n_moves_first2second
+        cars_first_location, cars_second_location = cars
+        # Check if there are enough cars in the first or second location and that there is enough space in the other
+        # location
+        if n_moves_first2second < 0:  # Move cars from second to first location
+            n_moves_first2second = -min(cars_second_location, -n_moves_first2second)
+            n_moves_first2second = -min(self.max_n_cars - cars_first_location, -n_moves_first2second)
+        else:  # Move cars from first to second location
+            n_moves_first2second = min(cars_first_location, n_moves_first2second)
+            n_moves_first2second = min(self.max_n_cars - cars_second_location, n_moves_first2second)
+
+        # Check that the destination location has enough space
+        cars_first_location -= n_moves_first2second
+        cars_second_location += n_moves_first2second
         return cars_first_location, cars_second_location
 
     def step(self, action: int) -> Tuple[Tuple[int, int], float, bool, None]:
@@ -129,11 +136,11 @@ class CarRentalEnv(TabEnv):
 
     def obs2int(self, observation: Tuple[int, int]) -> int:
         """Converts a state to an integer."""
-        return observation[0] * (self.max_n_cars + 1) + observation[1]
+        return int(np.ravel_multi_index(observation, (self.max_n_cars + 1, self.max_n_cars + 1)))
 
     def int2obs(self, state: int) -> Tuple[int, int]:
         """Converts an integer to a state."""
-        return state // (self.max_n_cars + 1), state % (self.max_n_cars + 1)
+        return tuple(np.unravel_index(state, (self.max_n_cars + 1, self.max_n_cars + 1)))
 
     def reset(self) -> Tuple[int, int]:
         """Resets the environment."""

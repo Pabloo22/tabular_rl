@@ -106,6 +106,8 @@ class CarRentalMDP(MarkovDecisionProcess):
         returns."""
         car_tuple = self.car_rental_env.int2obs(state)
         new_car_tuple = self.car_rental_env.move_cars(list(car_tuple), action)
+        if not all(n_cars <= self.car_rental_env.max_n_cars for n_cars in new_car_tuple):
+            b = 1
         return self.car_rental_env.obs2int(new_car_tuple)
 
     def get_transition_probabilities(self, state: int, action: int) -> np.ndarray:
@@ -118,3 +120,8 @@ class CarRentalMDP(MarkovDecisionProcess):
         new_state = self._get_new_state(state, action)
         n_moves = abs(action - self.car_rental_env.max_moves)
         return self._reward_matrix_without_action[new_state, :] - n_moves * self.car_rental_env.move_cost
+
+
+if __name__ == '__main__':
+    index = (1, 1)
+    print(np.ravel_multi_index(index, (3, 3)))
