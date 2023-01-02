@@ -29,7 +29,6 @@ The repository is structured as follows:
 ## Usage
 
 ### Model free agents
-
 ```python
 from tabular_rl.envs import CarRentalEnv
 from tabular_rl.agents import DoubleQLearning
