@@ -28,7 +28,7 @@ The repository is structured as follows:
 
 ## Usage
 
-### Model free agents
+### Model-Free Agents
 ```python
 from tabular_rl.envs import CarRentalEnv
 from tabular_rl.agents import DoubleQLearning
@@ -41,7 +41,7 @@ agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
 print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
 ```
 
-### Model based agents
+### Model-Based Agents
 ```python
 from tabular_rl.envs import CarRentalMDP, CarRentalEnv
 from tabular_rl.agents import DynamicProgramming
