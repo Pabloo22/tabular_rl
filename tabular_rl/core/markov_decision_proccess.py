@@ -22,6 +22,7 @@ class MarkovDecisionProcess:
         discount: Discount factor. A float in [0, 1).
         transition_matrix: Transition probabilities. A numpy array of shape (n_actions, n_states, n_states).
         immediate_reward_matrix: Reward function. A numpy array of shape (n_actions, n_states, n_states).
+        env: The environment of the MDP.
     """
 
     def __init__(self,

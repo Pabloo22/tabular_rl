@@ -11,6 +11,9 @@ class RLAgent(Agent):
 
     A reinforcement learning agent needs to be trained on an environment to be able to select actions.
     This differs from a rule-based agent, which can be used right away.
+
+    Args:
+        env: The environment or MDP the agent is interacting with.
     """
 
     def __init__(self, env: Union[TabEnv, MarkovDecisionProcess] = None):

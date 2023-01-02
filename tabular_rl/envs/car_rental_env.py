@@ -89,14 +89,9 @@ class CarRentalEnv(TabEnv):
             n_moves_first2second = min(cars_first_location, n_moves_first2second)
             n_moves_first2second = min(self.max_n_cars - cars_second_location, n_moves_first2second)
 
-
         # Check that the destination location has enough space
         cars_first_location -= n_moves_first2second
         cars_second_location += n_moves_first2second
-
-        if cars_first_location < 0 or cars_second_location < 0:
-            a = 1
-            b = 1
 
         return cars_first_location, cars_second_location
 
@@ -116,7 +111,7 @@ class CarRentalEnv(TabEnv):
         """
         reward = 0
 
-        self.cars = list(self.move_cars(self.cars, action))
+        self.cars: list = list(self.move_cars(self.cars, action))
 
         # Cost for moving cars
         n_moves = abs(action - self.max_moves)
@@ -141,11 +136,25 @@ class CarRentalEnv(TabEnv):
         return tuple(self.cars), reward, done, None
 
     def obs2int(self, observation: Tuple[int, int]) -> int:
-        """Converts a state to an integer."""
+        """Converts an observation to an integer.
+
+        Args:
+            observation: The observation to convert.
+
+        Returns:
+            The integer representation of the state.
+        """
         return int(np.ravel_multi_index(observation, (self.max_n_cars + 1, self.max_n_cars + 1)))
 
     def int2obs(self, state: int) -> Tuple[int, int]:
-        """Converts an integer to a state."""
+        """Converts an integer to an observation.
+
+        Args:
+            state: The integer to convert.
+
+        Returns:
+            The observation represented by the integer.
+        """
         return tuple(np.unravel_index(state, (self.max_n_cars + 1, self.max_n_cars + 1)))
 
     def reset(self) -> Tuple[int, int]:
@@ -155,7 +164,7 @@ class CarRentalEnv(TabEnv):
         return self.initial_state
 
     def render(self):
-        """Renders the environment."""
+        """Prints the number of cars in each location and whether the episode is done."""
         cars_in_first_location, cars_in_second_location = self.cars
         print(f"Number of cars in first location: {cars_in_first_location}")
         print(f"Number of cars in second location: {cars_in_second_location}")

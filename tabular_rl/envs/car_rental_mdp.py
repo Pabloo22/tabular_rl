@@ -23,6 +23,9 @@ class CarRentalMDP(MarkovDecisionProcess):
     to add the cost of moving 2 cars. Thus, is enough to compute only the transition and reward matrices for the
     states without taking into account the action and then add the cost of moving cars when computing the expected
     reward.
+
+    Args:
+        car_rental_env: The environment for the Jack's Rental problem.
     """
 
     def __init__(self, car_rental_env: CarRentalEnv):
@@ -118,8 +121,3 @@ class CarRentalMDP(MarkovDecisionProcess):
         new_state = self._get_new_state(state, action)
         n_moves = abs(action - self.env.max_moves)
         return self._reward_matrix_without_action[new_state, :] - n_moves * self.env.move_cost
-
-
-if __name__ == '__main__':
-    index = (1, 1)
-    print(np.ravel_multi_index(index, (3, 3)))

@@ -39,7 +39,7 @@ class TabEnv(abc.ABC):
 
     @abc.abstractmethod
     def obs2int(self, observation: any) -> int:
-        """Convert a state to an integer.
+        """Converts an observation to an integer.
 
         Args:
             observation: The observation to convert.
@@ -54,6 +54,7 @@ class TabEnv(abc.ABC):
 
     def play(self, player: Callable[[any], int], verbose: bool = True) -> float:
         """Plays the game with the agent.
+
         Args:
             player: An Agent or function that takes an observation and returns an action.
             verbose: Whether to render each step.
