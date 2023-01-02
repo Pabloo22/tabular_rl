@@ -27,6 +27,7 @@ agents are in the `tabular_rl.envs` and `tabular_rl.agents` modules respectively
 ## Usage
 
 ### Model-Free Agents
+
 ```python
 from tabular_rl.envs import CarRentalEnv
 from tabular_rl.agents import DoubleQLearning
@@ -34,7 +35,7 @@ from tabular_rl.agents import DoubleQLearning
 car_rental_env = CarRentalEnv(max_episode_length=100)
 
 agent = DoubleQLearning(car_rental_env)
-agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
+agent.train(n_episodes=100_000, eval_interval=1000, n_eval_episodes=10)
 
 print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
 

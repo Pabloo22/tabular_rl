@@ -83,10 +83,32 @@ class TabEnv(abc.ABC):
             use_tqdm: Whether to use tqdm to display the progress.
 
         Returns:
-            The average reward.
-        """
-        total_reward = 0
-        for _ in tqdm.tqdm(range(n_episodes), desc="Evaluating agent", disable=not use_tqdm):
-            total_reward += self.play(agent, verbose=False)
+            A dictionary with:
+             - The average reward ["avg"]
+            - The standard deviation of the reward ["std"]
+            - The minimum reward ["min"]
+            - The maximum reward ["max"]
+            - Lower and upper bounds of the 95% confidence interval for the expected reward ["ci"]
 
-        return total_reward / n_episodes
+        """
+        avg_reward = 0
+        var = 0
+        mx = float("-inf")
+        mn = float("inf")
+        rewards = []
+        for n in tqdm.trange(n_episodes, disable=not use_tqdm, desc="Evaluating agent"):
+            reward = self.play(agent, verbose=False)
+            rewards.append(reward)
+            old_avg_reward = avg_reward
+            avg_reward += (reward - avg_reward) / (n + 1)
+            var = ((n - 1)*var + n*(old_avg_reward - avg_reward)**2 + (reward - avg_reward)**2) / n if n > 0 else 0
+            mx = max(mx, reward)
+            mn = min(mn, reward)
+
+        std = var**0.5
+        c = 1.96 * std / n_episodes**0.5
+        lower = avg_reward - c
+        upper = avg_reward + c
+
+        return {"avg": avg_reward, "std": std, "min": mn, "max": mx, "ci": (lower, upper)}
+

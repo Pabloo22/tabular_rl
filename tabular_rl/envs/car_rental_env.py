@@ -1,4 +1,4 @@
-from typing import Tuple, List, Sequence, Union
+from typing import Tuple, List, Sequence, Union, Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -39,7 +39,8 @@ class CarRentalEnv(TabEnv):
         expected_rental_returns: Expected number of cars returned to the first and second locations.
         rental_credit: Reward for each rented car.
         move_cost: Cost for moving a car.
-        initial_state: Initial number of cars at each location.
+        initial_state: Initial number of cars at each location. If None, the initial state is (max_n_cars // 2,
+            max_n_cars // 2).
         max_episode_length: Maximum number of steps in an episode. If it is `None`, the episode length is unlimited.
         discount: Discount factor.
         seed: Seed for the random number generator.
@@ -52,7 +53,7 @@ class CarRentalEnv(TabEnv):
                  expected_rental_returns: Sequence = (3, 2),
                  rental_credit: float = 10,
                  move_cost: float = 2,
-                 initial_state: Tuple[int, int] = (10, 10),
+                 initial_state: Optional[Tuple[int, int]] = None,
                  max_episode_length: int = None,
                  discount: float = 0.9,
                  seed: int = None):
@@ -63,12 +64,13 @@ class CarRentalEnv(TabEnv):
         self.expected_rental_returns = np.array(expected_rental_returns)
         self.rental_credit = rental_credit
         self.move_cost = move_cost
-        self.initial_state: Tuple[int, int] = initial_state
+        self.initial_state: Tuple[int, int] = initial_state if initial_state is not None else (
+            max_n_cars // 2, max_n_cars // 2)
         self.max_episode_length = max_episode_length if max_episode_length is not None else float("inf")
         self.n_steps = 0
         self.seed = seed
 
-        self.cars = list(initial_state)
+        self.cars = list(self.initial_state)
 
         n_states = (max_n_cars + 1) ** 2
         n_actions = 2 * max_n_moved_cars + 1

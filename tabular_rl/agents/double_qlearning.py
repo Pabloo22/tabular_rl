@@ -103,10 +103,20 @@ class DoubleQLearning(RLAgent):
 
         self.initialized = True
 
+    def _update_q_values(self, state: int, action: int, reward: float, next_state: int, new_obs: int, update_a: bool):
+        if update_a:
+            a_star = self.select_action(new_obs, training=False, use_b=False)
+            target = reward + self.env.discount * self.q_b_[next_state, a_star]
+            self.q_a_[state, action] += self.step_size * (target - self.q_a_[state, action])
+        else:
+            b_star = self.select_action(new_obs, use_a=False)
+            target = reward + self.env.discount * self.q_a_[next_state, b_star]
+            self.q_b_[state, action] += self.step_size * (target - self.q_b_[state, action])
+
     def train(self,
               n_episodes: int = 100_000,
               eval_interval: int = 10_000,
-              n_episodes_eval: int = 100,
+              n_eval_episodes: int = 100,
               verbose: bool = True,
               use_tqdm: bool = True):
         """Trains the agent on the given environment.
@@ -114,35 +124,32 @@ class DoubleQLearning(RLAgent):
         Args:
             n_episodes: The number of episodes to train the agent for.
             eval_interval: The number of episodes between each evaluation.
-            n_episodes_eval: The number of episodes to evaluate the agent for.
+            n_eval_episodes: The number of episodes to evaluate the agent for.
             verbose: Whether to print the evaluation results.
             use_tqdm: Whether to use tqdm to show the progress.
         """
 
         if not self.initialized:
             self._initialize_q_values()
-        for episode in tqdm.trange(n_episodes, disable=not use_tqdm):
-            obs = self.env.reset()
-            state = self.env.obs2int(obs)
-            done = False
-            while not done:
-                action = self.select_action(obs, training=True)
-                new_obs, reward, done, _ = self.env.step(action)
-                reward = self._normalize_reward(reward) if self.normalize_rewards else reward
-                next_state = self.env.obs2int(new_obs)
-                update_a = self._random_state.rand() < 0.5
-                if update_a:
-                    a_star = self.select_action(new_obs, training=False, use_b=False)
-                    target = reward + self.env.discount * self.q_b_[next_state, a_star]
-                    self.q_a_[state, action] += self.step_size * (target - self.q_a_[state, action])
-                else:
-                    b_star = self.select_action(new_obs, use_a=False)
-                    target = reward + self.env.discount * self.q_a_[next_state, b_star]
-                    self.q_b_[state, action] += self.step_size * (target - self.q_b_[state, action])
-                state = next_state
-                obs = new_obs
-            if episode % eval_interval == 0 and verbose:
-                print(f"Episode {episode}: {self.env.evaluate_agent(self, n_episodes=100)}")
+
+        try:
+            for episode in tqdm.trange(n_episodes, disable=not use_tqdm):
+                obs = self.env.reset()
+                state = self.env.obs2int(obs)
+                done = False
+                while not done:
+                    action = self.select_action(obs, training=True)
+                    new_obs, reward, done, _ = self.env.step(action)
+                    reward = self._normalize_reward(reward) if self.normalize_rewards else reward
+                    next_state = self.env.obs2int(new_obs)
+                    update_a = self._random_state.rand() < 0.5
+                    self._update_q_values(state, action, reward, next_state, new_obs, update_a)
+                    state = next_state
+                    obs = new_obs
+                if episode % eval_interval == 0 and verbose:
+                    print(f"Episode {episode}: {self.env.evaluate_agent(self, n_episodes=n_eval_episodes)}")
+        except KeyboardInterrupt:
+            pass
 
     def save_learning(self, path: str):
         """Saves the agent to the given path."""

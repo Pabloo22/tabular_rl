@@ -139,28 +139,29 @@ if __name__ == '__main__':
     from tabular_rl.envs import CarRentalMDP, CarRentalEnv
     from tabular_rl.agents import DoubleQLearning
 
-    car_rental_env = CarRentalEnv(max_episode_length=100)
+    car_rental_env = CarRentalEnv(max_episode_length=10,
+                                  max_n_cars=5,
+                                  max_n_moved_cars=1,
+                                  expected_rental_returns=(1, 2),
+                                  expected_rental_requests=(2, 1),
+                                  rental_credit=1,
+                                  move_cost=2,)
     car_rental_mdp = CarRentalMDP(car_rental_env)
 
     dp_agent = DynamicProgramming(car_rental_mdp)
     dp_agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
-    max_cars = car_rental_env.max_n_cars
-    policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
-    for s, a in enumerate(dp_agent.policy_):
-        n_cars_first_loc, n_cars_second_loc = np.unravel_index(s, policy.shape)
-        policy[max_cars - n_cars_first_loc, n_cars_second_loc] = car_rental_env.max_moves - a
-    print(car_rental_env.evaluate_agent(dp_agent, n_episodes=1000))
-    print(policy)
+    car_rental_env.visualize_policy(dp_agent.policy_, "DP Policy")
+    print(car_rental_env.evaluate_agent(dp_agent, n_episodes=10_000))
 
-    print("-" * 100)
+    q_learning_agent = DoubleQLearning(car_rental_env, init_method=100, epsilon=0.3, step_size=0.01)
+    q_learning_agent.train(n_episodes=100_000, eval_interval=10_000, use_tqdm=True)
 
-    dql_agent = DoubleQLearning(car_rental_env)
-    dql_agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
-    max_cars = car_rental_env.max_n_cars
-    policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
-    for cars1 in range(max_cars + 1):
-        for cars2 in range(max_cars + 1):
-            policy[max_cars - cars1, cars2] = car_rental_env.max_moves - dql_agent.select_action((cars1, cars2))
+    policy = np.zeros((car_rental_env.max_n_cars + 1, car_rental_env.max_n_cars + 1), dtype=int)
+    for i in range(car_rental_env.max_n_cars + 1):
+        for j in range(car_rental_env.max_n_cars + 1):
+            policy[car_rental_env.max_n_cars - i, j] = \
+                car_rental_env.max_moves - q_learning_agent((i, j))
 
-    print(policy)
-    print(car_rental_env.evaluate_agent(dql_agent, n_episodes=1000))
+    car_rental_env.visualize_policy(policy, "Q-Learning Policy")
+    print(car_rental_env.evaluate_agent(q_learning_agent, n_episodes=10_000))
+
