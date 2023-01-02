@@ -10,8 +10,8 @@ The current methods implemented are:
 There are three main types of objects:
 - `TabEnv`: This is the tabular environment in which the agent will interact. It uses the OpenAI Gym interface. For an 
 environment to be considered tabular, it must have a finite number of states and actions. Actions and states are 
-represented as integers from 0 to `n_actions ` - 1 and `n_states` - 1 respectively. However, we created the concept of 
-"observation" which can be used to represent the state in a more meaningful way. For example, in the `CarRental` 
+represented as integers from 0 to `n_actions ` - 1 and `n_states` - 1 respectively. However, we use the concept of 
+"observation" which makes reference to a more meaningful state representation. For example, in the `CarRental` 
 environment, the observation is a tuple of the number of cars in each location.
 - `Agent`: This is the agent that will interact with the environment. Every agent is a `Callable` and returns an action 
 for a given observation. Some agents (`RLAgents`) have a `train` method that allows them to learn from the environment.
@@ -39,6 +39,8 @@ agent = DoubleQLearning(car_rental_env)
 agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
 
 print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
+
+agent.save_learning("double_q_learning_car_rental")
 ```
 
 ### Model-Based Agents
@@ -53,6 +55,8 @@ agent = DynamicProgramming(car_rental_mdp)
 agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
 
 print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
+
+agent.save_learning("dynamic_programming_car_rental")
 ```
 ## How to create a new environment
 There are some environments already implemented in the `tabular_rl.envs` module. However, if you want 
