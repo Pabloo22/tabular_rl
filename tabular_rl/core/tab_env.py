@@ -9,9 +9,10 @@ class TabEnv(abc.ABC):
     n_states: int
     n_actions: int
 
-    def __init__(self, n_states: int, n_actions: int):
+    def __init__(self, n_states: int, n_actions: int, discount: float = 1):
         self.n_states = n_states
         self.n_actions = n_actions
+        self.discount = discount
 
     @abc.abstractmethod
     def step(self, action: int) -> Tuple[any, float, bool, Union[dict, None]]:

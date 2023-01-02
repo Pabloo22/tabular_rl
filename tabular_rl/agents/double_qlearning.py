@@ -31,7 +31,6 @@ class DoubleQLearning(RLAgent):
     def __init__(self,
                  env: TabEnv,
                  epsilon: float = 0.1,
-                 discount: float = 0.9,
                  step_size: float = 0.1,
                  init_method: str or int or float = "zeros",
                  seed: int = None,
@@ -41,7 +40,6 @@ class DoubleQLearning(RLAgent):
 
         super().__init__(env)
         self.epsilon = epsilon
-        self.discount = discount
         self.step_size = step_size
         self._random_state = np.random.RandomState(seed)
         self.init_method = init_method
@@ -135,11 +133,11 @@ class DoubleQLearning(RLAgent):
                 update_a = self._random_state.rand() < 0.5
                 if update_a:
                     a_star = self.select_action(new_obs, training=False, use_b=False)
-                    target = reward + self.discount * self.q_b_[next_state, a_star]
+                    target = reward + self.env.discount * self.q_b_[next_state, a_star]
                     self.q_a_[state, action] += self.step_size * (target - self.q_a_[state, action])
                 else:
                     b_star = self.select_action(new_obs, use_a=False)
-                    target = reward + self.discount * self.q_a_[next_state, b_star]
+                    target = reward + self.env.discount * self.q_a_[next_state, b_star]
                     self.q_b_[state, action] += self.step_size * (target - self.q_b_[state, action])
                 state = next_state
                 obs = new_obs

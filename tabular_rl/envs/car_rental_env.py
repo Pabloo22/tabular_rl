@@ -1,5 +1,7 @@
-import numpy as np
 from typing import Tuple, List, Sequence, Union
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 from tabular_rl.core import TabEnv
 
@@ -62,7 +64,6 @@ class CarRentalEnv(TabEnv):
         self.rental_credit = rental_credit
         self.move_cost = move_cost
         self.initial_state: Tuple[int, int] = initial_state
-        self.discount = discount
         self.max_episode_length = max_episode_length if max_episode_length is not None else float("inf")
         self.n_steps = 0
         self.seed = seed
@@ -71,7 +72,7 @@ class CarRentalEnv(TabEnv):
 
         n_states = (max_n_cars + 1) ** 2
         n_actions = 2 * max_n_moved_cars + 1
-        super().__init__(n_states, n_actions)
+        super().__init__(n_states, n_actions, discount)
 
         np.random.seed(seed)
 
@@ -172,6 +173,61 @@ class CarRentalEnv(TabEnv):
 
         if self.n_steps == self.max_episode_length:
             print("Episode done")
+
+    def transform_policy(self, policy: np.ndarray) -> np.ndarray:
+        """Transforms a policy that maps states (integers) to actions (integers) to a policy that maps observations
+        (tuples) to actions (integers).
+
+        The actual action is modified so that it represents the number of cars moved from the first location to the
+        second location.
+
+        Args:
+            policy: The policy to transform.
+
+        Returns:
+            The transformed policy.
+        """
+
+        new_policy = np.zeros((self.max_n_cars + 1, self.max_n_cars + 1), dtype=int)
+        for state, action in enumerate(policy):
+            n_cars_first_loc, n_cars_second_loc = self.int2obs(state)
+            new_policy[self.max_n_cars - n_cars_first_loc, n_cars_second_loc] = self.max_moves - action
+
+        return new_policy
+
+    def visualize_policy(self, policy: np.ndarray, title: str = None):
+        """Visualizes the policy.
+
+        Args:
+            policy: The policy to visualize.
+            title: Title of the plot.
+        """
+        fig, ax = plt.subplots()
+
+        policy = self.transform_policy(policy) if policy.ndim == 1 else policy
+
+        im = ax.imshow(policy, cmap="viridis")
+        x_ticks = np.arange(0, self.max_n_cars + 1)
+        y_ticks = list(range(self.max_n_cars + 1))
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
+        ax.set_xticklabels(x_ticks)
+        ax.set_yticklabels(y_ticks[::-1])
+        ax.set_xlabel("Number of cars in second location")
+        ax.set_ylabel("Number of cars in first location")
+
+        cbar = ax.figure.colorbar(im, ax=ax)
+        cbar.ax.set_ylabel("Number of cars moved from first location to second location", rotation=-90, va="bottom")
+
+        if title is not None:
+            ax.set_title(title)
+
+        for i in range(policy.shape[0]):
+            for j in range(policy.shape[1]):
+                ax.text(j, i, policy[i, j], ha="center", va="center", color="w")
+
+        fig.tight_layout()
+        plt.show()
 
 
 if __name__ == "__main__":
