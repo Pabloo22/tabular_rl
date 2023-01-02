@@ -4,7 +4,7 @@ to provide a framework that allows to easily compare different methods and to ea
 
 ## Overview
 The current methods implemented are:
-- [x] Generalized Policy Iteration
+- [x] Generalized Policy Iteration (Dynamic Programming)
 - [x] Double Q-Learning
 
 There are three main types of objects:
