@@ -48,7 +48,7 @@ agent.save_learning("double_q_learning_car_rental")
 from tabular_rl.envs import CarRentalMDP, CarRentalEnv
 from tabular_rl.agents import DynamicProgramming
 
-car_rental_env = CarRentalEnv()
+car_rental_env = CarRentalEnv(max_episode_length=100)
 car_rental_mdp = CarRentalMDP(car_rental_env)
 
 agent = DynamicProgramming(car_rental_mdp)
