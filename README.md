@@ -22,6 +22,8 @@ as a Dynamic Programming based agent.
 Those classes are defined in the `tabular_rl.core` module. The implementations of some specific environments and
 agents are in the `tabular_rl.envs` and `tabular_rl.agents` modules respectively.
 
+![core class diagram](core_class_diagram.png)
+
 ## Usage
 
 ### Model-Free Agents
