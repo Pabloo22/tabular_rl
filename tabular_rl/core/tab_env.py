@@ -52,9 +52,6 @@ class TabEnv(abc.ABC):
     def render(self):
         """Renders the environment."""
 
-    def set_transition_probability_matrix(self):
-        """Sets the transition probability matrix."""
-
     def play(self, player: Callable[[any], int], verbose: bool = True) -> float:
         """Plays the game with the agent.
         Args:
