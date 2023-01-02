@@ -58,7 +58,7 @@ print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
 
 agent.save_learning("dynamic_programming_car_rental")
 ```
-## How to create a new environment
+## How to Create a New Environment
 There are some environments already implemented in the `tabular_rl.envs` module. However, if you want 
 to create a new one, you can do it by inheriting from the `tabular_rl.core.TabEnv` class and implementing
 the following methods:
