@@ -28,16 +28,33 @@ The repository is structured as follows:
 
 ## Usage
 
+### Model free agents
+
 ```python
 from tabular_rl.envs import CarRentalEnv
 from tabular_rl.agents import DoubleQLearning
 
 car_rental_env = CarRentalEnv(max_episode_length=100)
+
 agent = DoubleQLearning(car_rental_env)
 agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
+
 print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
 ```
 
+### Model based agents
+```python
+from tabular_rl.envs import CarRentalMDP, CarRentalEnv
+from tabular_rl.agents import DynamicProgramming
+
+car_rental_env = CarRentalEnv()
+car_rental_mdp = CarRentalMDP(car_rental_env)
+
+agent = DynamicProgramming(car_rental_mdp)
+agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
+
+print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
+```
 ## How to create a new environment
 There are some environments already implemented in the `tabular_rl.envs` module. However, if you want 
 to create a new one, you can do it by inheriting from the `tabular_rl.core.TabEnv` class and implementing
