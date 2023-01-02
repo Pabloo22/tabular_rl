@@ -58,8 +58,8 @@ print(car_rental_env.evaluate_agent(agent, n_episodes=1000))
 There are some environments already implemented in the `tabular_rl.envs` module. However, if you want 
 to create a new one, you can do it by inheriting from the `tabular_rl.core.TabEnv` class and implementing
 the following methods:
-- `reset`: Resets the environment and returns the initial state.
-- `step`: Performs the given action and returns the next state, the reward, a boolean indicating if the 
+- `reset`: Resets the environment and returns the initial observation.
+- `step`: Performs the given action and returns the next observation, the reward, a boolean indicating if the 
 episode has finished and a dictionary with additional information.
 - `obs2int`: This method map each observation to an integer. This is needed since the agents assume that this is the
 state representation. This allows us to use the same agent implementation for different environments.
