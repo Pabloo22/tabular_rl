@@ -25,7 +25,7 @@ class DynamicProgramming(RLAgent):
     #
     # mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
     # agent = DynamicProgramming(mdp)
-    # agent.fit()
+    # agent.train()
     # print(agent.policy_, agent.state_value_array_)
     """
 
@@ -78,11 +78,11 @@ class DynamicProgramming(RLAgent):
             if np.abs(self.state_value_array_ - old_state_value_array).max() < tol:
                 break
 
-    def fit(self,
-            tol: float = 0.001,
-            max_policy_evaluations: int = 1,
-            max_iters: int = 1_000,
-            use_tqdm: bool = True) -> None:
+    def train(self,
+              tol: float = 0.001,
+              max_policy_evaluations: int = 1,
+              max_iters: int = 1_000,
+              use_tqdm: bool = True) -> None:
 
         if not self.initialized:
             self._initialize()
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     car_rental_mdp = CarRentalMDP(car_rental_env)
 
     agent = DynamicProgramming(car_rental_mdp)
-    agent.fit(tol=0.001, max_policy_evaluations=1, max_iters=1000)
+    agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
     max_cars = car_rental_env.max_n_cars
     policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
     for state, action in enumerate(agent.policy_):
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     print(policy)
     print("-" * 100)
     agent = DoubleQLearning(car_rental_env)
-    agent.fit(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
+    agent.train(n_episodes=100_000, eval_interval=1000, n_episodes_eval=10)
     max_cars = car_rental_env.max_n_cars
     policy = np.zeros((max_cars + 1, max_cars + 1), dtype=int)
     for cars1 in range(max_cars + 1):

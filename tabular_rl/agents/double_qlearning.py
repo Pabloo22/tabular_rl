@@ -81,11 +81,11 @@ class DoubleQLearning(RLAgent):
 
         self.initialized = True
 
-    def fit(self,
-            n_episodes: int = 100_000,
-            eval_interval: int = 10_000,
-            n_episodes_eval: int = 100,
-            verbose: bool = True):
+    def train(self,
+              n_episodes: int = 100_000,
+              eval_interval: int = 10_000,
+              n_episodes_eval: int = 100,
+              verbose: bool = True):
         """Trains the agent on the given environment."""
 
         if not self.initialized:

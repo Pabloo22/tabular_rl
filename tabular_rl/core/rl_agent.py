@@ -17,7 +17,7 @@ class RLAgent(Agent):
         super().__init__(env)
 
     @abc.abstractmethod
-    def fit(self) -> None:
+    def train(self) -> None:
         """Trains the agent on the given environment."""
 
     @abc.abstractmethod
