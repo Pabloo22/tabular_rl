@@ -10,11 +10,10 @@ class DynamicProgramming(RLAgent):
     It makes use of a Markov Decision Process to perform policy evaluation and policy improvement.
 
     Example:
-    >>> transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]
-                                                  [[0.3, 0.6, 0.1],[0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
+    >>> from tabular_rl.core import MarkovDecisionProcess
+    >>> transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]], [[0.3, 0.6, 0.1],[0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
 
-    >>> reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]],
-                                    [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
+    >>> reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
 
     >>> mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
     >>> agent = DynamicProgramming(mdp)
@@ -138,30 +137,48 @@ class DynamicProgramming(RLAgent):
 if __name__ == '__main__':
     from tabular_rl.envs import CarRentalMDP, CarRentalEnv
     from tabular_rl.agents import DoubleQLearning
+    from tabular_rl.core import MarkovDecisionProcess
+    import numpy as np
+    #
+    # car_rental_env = CarRentalEnv(max_episode_length=10,
+    #                               max_n_cars=5,
+    #                               max_n_moved_cars=1,
+    #                               expected_rental_returns=(1, 2),
+    #                               expected_rental_requests=(2, 1),
+    #                               rental_credit=2,
+    #                               move_cost=1,
+    #                               discount=0.99)
+    # car_rental_mdp = CarRentalMDP(car_rental_env)
+    #
+    # dp_agent = DynamicProgramming(car_rental_mdp)
+    # dp_agent.train(tol=0.00001, max_policy_evaluations=10, max_iters=1)
+    # car_rental_env.visualize_policy(dp_agent.policy_, "DP Policy")
+    # car_rental_env.visualize_policy(dp_agent.state_value_array_, "State-Value Array")
+    # print(car_rental_env.evaluate_agent(dp_agent, n_episodes=10_000))
+    #
+    # q_learning_agent = DoubleQLearning(car_rental_env, init_method=100, epsilon=0.3, step_size=0.01)
+    # q_learning_agent.train(n_episodes=100_000, eval_interval=10_000, use_tqdm=True)
+    #
+    # policy = np.zeros((car_rental_env.max_n_cars + 1, car_rental_env.max_n_cars + 1), dtype=int)
+    # for i in range(car_rental_env.max_n_cars + 1):
+    #     for j in range(car_rental_env.max_n_cars + 1):
+    #         policy[car_rental_env.max_n_cars - i, j] = \
+    #             car_rental_env.max_moves - q_learning_agent((i, j))
+    #
+    # car_rental_env.visualize_policy(policy, "Q-Learning Policy")
+    # print(car_rental_env.evaluate_agent(q_learning_agent, n_episodes=10_000))
 
-    car_rental_env = CarRentalEnv(max_episode_length=10,
-                                  max_n_cars=5,
-                                  max_n_moved_cars=1,
-                                  expected_rental_returns=(1, 2),
-                                  expected_rental_requests=(2, 1),
-                                  rental_credit=1,
-                                  move_cost=2,)
-    car_rental_mdp = CarRentalMDP(car_rental_env)
+    transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]],
+                                              [[0.3, 0.6, 0.1], [0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
 
-    dp_agent = DynamicProgramming(car_rental_mdp)
-    dp_agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
-    car_rental_env.visualize_policy(dp_agent.policy_, "DP Policy")
-    print(car_rental_env.evaluate_agent(dp_agent, n_episodes=10_000))
+    reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
 
-    q_learning_agent = DoubleQLearning(car_rental_env, init_method=100, epsilon=0.3, step_size=0.01)
-    q_learning_agent.train(n_episodes=100_000, eval_interval=10_000, use_tqdm=True)
+    mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
+    agent = DynamicProgramming(mdp)
+    agent.train(tol=1e-6, max_policy_evaluations=1, max_iters=1000)
+    print(agent.policy_, agent.state_value_array_, agent._q_value_array_, sep="\n")  # [27.68121592 24.18902593 20.50238264]
 
-    policy = np.zeros((car_rental_env.max_n_cars + 1, car_rental_env.max_n_cars + 1), dtype=int)
-    for i in range(car_rental_env.max_n_cars + 1):
-        for j in range(car_rental_env.max_n_cars + 1):
-            policy[car_rental_env.max_n_cars - i, j] = \
-                car_rental_env.max_moves - q_learning_agent((i, j))
+    import doctest
 
-    car_rental_env.visualize_policy(policy, "Q-Learning Policy")
-    print(car_rental_env.evaluate_agent(q_learning_agent, n_episodes=10_000))
+    doctest.testmod()
 

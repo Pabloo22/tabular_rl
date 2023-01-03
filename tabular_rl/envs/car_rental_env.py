@@ -193,7 +193,7 @@ class CarRentalEnv(TabEnv):
         new_policy = np.zeros((self.max_n_cars + 1, self.max_n_cars + 1), dtype=int)
         for state, action in enumerate(policy):
             n_cars_first_loc, n_cars_second_loc = self.int2obs(state)
-            new_policy[self.max_n_cars - n_cars_first_loc, n_cars_second_loc] = self.max_moves - action
+            new_policy[self.max_n_cars - n_cars_first_loc, n_cars_second_loc] = action
 
         return new_policy
 
@@ -209,7 +209,7 @@ class CarRentalEnv(TabEnv):
         policy = self.transform_policy(policy) if policy.ndim == 1 else policy
 
         im = ax.imshow(policy, cmap="viridis")
-        x_ticks = np.arange(0, self.max_n_cars + 1)
+        x_ticks = np.arange(self.max_n_cars + 1)
         y_ticks = list(range(self.max_n_cars + 1))
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
