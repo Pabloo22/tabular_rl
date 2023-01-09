@@ -7,6 +7,10 @@ The current methods implemented are:
 - [x] Generalized Policy Iteration (Dynamic Programming)
 - [x] Double Q-Learning
 
+The current environments implemented are:
+- [x] The Jack's Car Rental problem. (Example 4.2 in "Reinforcement Learning: An Introduction. Richard S. Sutton and 
+Andrew G. Barto.")
+
 There are three core classes:
 - `TabEnv`: This is the tabular environment in which the agent will interact. It uses the OpenAI Gym interface. For an 
 environment to be considered tabular, it must have a finite number of states and actions. Actions and states are 
@@ -24,6 +28,12 @@ Those classes are defined in the `tabular_rl.core` module. The implementations o
 agents are in the `tabular_rl.envs` and `tabular_rl.agents` modules respectively.
 
 ![core class diagram](core_class_diagram.png)
+
+## Installation
+To install the package, simply run:
+```
+pip install tabular-rl
+```
 
 ## Usage
 
