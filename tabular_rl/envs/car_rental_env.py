@@ -201,11 +201,11 @@ class CarRentalEnv(TabEnv):
 
         return new_policy
 
-    def visualize_array(self, policy: np.ndarray, title: str = None, transform_actions: bool = True):
+    def visualize_array(self, array: np.ndarray, title: str = None, transform_actions: bool = True):
         """Visualizes the policy or the state-value array.
 
         Args:
-            policy: The policy or the state-value array to visualize.
+            array: The policy or the state-value array to visualize.
             title: Title of the plot.
             transform_actions: If True, the actions are transformed to represent the number of cars moved from the first
                 location to the second location. If False, the actions are represented as the index of the action in the
@@ -213,9 +213,9 @@ class CarRentalEnv(TabEnv):
         """
         fig, ax = plt.subplots()
 
-        policy = self.transform_array(policy, transform_actions=transform_actions) if policy.ndim == 1 else policy
+        array = self.transform_array(array, transform_actions=transform_actions) if array.ndim == 1 else array
 
-        im = ax.imshow(policy, cmap="viridis")
+        im = ax.imshow(array, cmap="viridis")
         x_ticks = np.arange(self.max_cars + 1)
         y_ticks = list(range(self.max_cars + 1))
         ax.set_xticks(x_ticks)
@@ -232,9 +232,9 @@ class CarRentalEnv(TabEnv):
         if title is not None:
             ax.set_title(title)
 
-        for i in range(policy.shape[0]):
-            for j in range(policy.shape[1]):
-                ax.text(j, i, policy[i, j], ha="center", va="center", color="w")
+        for i in range(array.shape[0]):
+            for j in range(array.shape[1]):
+                ax.text(j, i, array[i, j], ha="center", va="center", color="w")
 
         fig.tight_layout()
 
