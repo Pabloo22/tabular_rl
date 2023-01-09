@@ -33,8 +33,8 @@ class CarRentalEnv(TabEnv):
     to the constructor.
 
     Args:
-        max_n_cars: Maximum number of cars at each location.
-        max_n_moved_cars: Maximum number of cars that can be moved between the two locations.
+        max_cars: Maximum number of cars at each location.
+        max_moves: Maximum number of cars that can be moved between the two locations.
         expected_rental_requests: Expected number of rental requests at the first and second locations.
         expected_rental_returns: Expected number of cars returned to the first and second locations.
         rental_credit: Reward for each rented car.
@@ -42,38 +42,39 @@ class CarRentalEnv(TabEnv):
         initial_state: Initial number of cars at each location. If None, the initial state is (max_n_cars // 2,
             max_n_cars // 2).
         max_episode_length: Maximum number of steps in an episode. If it is `None`, the episode length is unlimited.
+            We recommend to set it to a finite value to be able to use the `play` and `evaluate_agent` methods.
         discount: Discount factor.
         seed: Seed for the random number generator.
     """
 
     def __init__(self,
-                 max_n_cars: int = 20,
-                 max_n_moved_cars: int = 5,
+                 max_cars: int = 20,
+                 max_moves: int = 5,
                  expected_rental_requests: Sequence = (3, 4),
                  expected_rental_returns: Sequence = (3, 2),
                  rental_credit: float = 10,
                  move_cost: float = 2,
                  initial_state: Optional[Tuple[int, int]] = None,
-                 max_episode_length: int = None,
+                 max_episode_length: Optional[int] = 100,
                  discount: float = 0.9,
                  seed: int = None):
 
-        self.max_n_cars = max_n_cars
-        self.max_moves = max_n_moved_cars
+        self.max_cars = max_cars
+        self.max_moves = max_moves
         self.expected_rental_requests = np.array(expected_rental_requests)
         self.expected_rental_returns = np.array(expected_rental_returns)
         self.rental_credit = rental_credit
         self.move_cost = move_cost
         self.initial_state: Tuple[int, int] = initial_state if initial_state is not None else (
-            max_n_cars // 2, max_n_cars // 2)
+            max_cars // 2, max_cars // 2)
         self.max_episode_length = max_episode_length if max_episode_length is not None else float("inf")
         self.n_steps = 0
         self.seed = seed
 
         self.cars = list(self.initial_state)
 
-        n_states = (max_n_cars + 1) ** 2
-        n_actions = 2 * max_n_moved_cars + 1
+        n_states = (max_cars + 1) ** 2
+        n_actions = 2 * max_moves + 1
         super().__init__(n_states, n_actions, discount)
 
         np.random.seed(seed)
@@ -87,12 +88,11 @@ class CarRentalEnv(TabEnv):
         # location
         if n_moves_first2second < 0:  # Move cars from second to first location
             n_moves_first2second = -min(cars_second_location, -n_moves_first2second)
-            n_moves_first2second = -min(self.max_n_cars - cars_first_location, -n_moves_first2second)
+            n_moves_first2second = -min(self.max_cars - cars_first_location, -n_moves_first2second)
         else:  # Move cars from first to second location
             n_moves_first2second = min(cars_first_location, n_moves_first2second)
-            n_moves_first2second = min(self.max_n_cars - cars_second_location, n_moves_first2second)
+            n_moves_first2second = min(self.max_cars - cars_second_location, n_moves_first2second)
 
-        # Check that the destination location has enough space
         cars_first_location -= n_moves_first2second
         cars_second_location += n_moves_first2second
 
@@ -118,7 +118,7 @@ class CarRentalEnv(TabEnv):
 
         # Cost for moving cars
         n_moves = abs(action - self.max_moves)
-        reward -= self.move_cost * abs(n_moves)
+        reward -= self.move_cost * n_moves
 
         # Rent cars
         requests = np.random.poisson(self.expected_rental_requests)
@@ -130,7 +130,7 @@ class CarRentalEnv(TabEnv):
         # Return cars
         returns = np.random.poisson(self.expected_rental_returns)
         for i, return_ in enumerate(returns):
-            self.cars[i] = min(self.cars[i] + return_, self.max_n_cars)
+            self.cars[i] = min(self.cars[i] + return_, self.max_cars)
 
         # Check if episode is done
         self.n_steps += 1
@@ -147,7 +147,7 @@ class CarRentalEnv(TabEnv):
         Returns:
             The integer representation of the state.
         """
-        return int(np.ravel_multi_index(observation, (self.max_n_cars + 1, self.max_n_cars + 1)))
+        return int(np.ravel_multi_index(observation, (self.max_cars + 1, self.max_cars + 1)))
 
     def int2obs(self, state: int) -> Tuple[int, int]:
         """Converts an integer to an observation.
@@ -158,7 +158,7 @@ class CarRentalEnv(TabEnv):
         Returns:
             The observation represented by the integer.
         """
-        return tuple(np.unravel_index(state, (self.max_n_cars + 1, self.max_n_cars + 1)))
+        return tuple(np.unravel_index(state, (self.max_cars + 1, self.max_cars + 1)))
 
     def reset(self) -> Tuple[int, int]:
         """Resets the environment."""
@@ -176,41 +176,48 @@ class CarRentalEnv(TabEnv):
         if self.n_steps == self.max_episode_length:
             print("Episode done")
 
-    def transform_policy(self, policy: np.ndarray) -> np.ndarray:
-        """Transforms a policy that maps states (integers) to actions (integers) to a policy that maps observations
-        (tuples) to actions (integers).
+    def transform_array(self, array: np.ndarray, transform_actions: bool = True) -> np.ndarray:
+        """Transforms a policy or a state_value_array that maps states (integers) to values or actions to an array that
+        that maps observations (tuples) to the same values or actions.
 
         The actual action is modified so that it represents the number of cars moved from the first location to the
         second location.
 
         Args:
-            policy: The policy to transform.
+            array: The policy or the state-value array to transform.
+            transform_actions: If True, the actions are transformed to represent the number of cars moved from the first
+                location to the second location. If False, the actions are represented as the index of the action in the
+                action space or the value of the state if `array` is a state-value array.
 
         Returns:
-            The transformed policy.
+            The transformed policy or state-value array.
         """
 
-        new_policy = np.zeros((self.max_n_cars + 1, self.max_n_cars + 1), dtype=int)
-        for state, action in enumerate(policy):
+        new_policy = np.zeros((self.max_cars + 1, self.max_cars + 1), dtype=int)
+        for state, action in enumerate(array):
             n_cars_first_loc, n_cars_second_loc = self.int2obs(state)
-            new_policy[self.max_n_cars - n_cars_first_loc, n_cars_second_loc] = action
+            value = self.max_moves - action if transform_actions else action
+            new_policy[self.max_cars - n_cars_first_loc, n_cars_second_loc] = value
 
         return new_policy
 
-    def visualize_policy(self, policy: np.ndarray, title: str = None):
-        """Visualizes the policy.
+    def visualize_array(self, policy: np.ndarray, title: str = None, transform_actions: bool = True):
+        """Visualizes the policy or the state-value array.
 
         Args:
-            policy: The policy to visualize.
+            policy: The policy or the state-value array to visualize.
             title: Title of the plot.
+            transform_actions: If True, the actions are transformed to represent the number of cars moved from the first
+                location to the second location. If False, the actions are represented as the index of the action in the
+                action space or the value of the state if `array` is a state-value array.
         """
         fig, ax = plt.subplots()
 
-        policy = self.transform_policy(policy) if policy.ndim == 1 else policy
+        policy = self.transform_array(policy, transform_actions=transform_actions) if policy.ndim == 1 else policy
 
         im = ax.imshow(policy, cmap="viridis")
-        x_ticks = np.arange(self.max_n_cars + 1)
-        y_ticks = list(range(self.max_n_cars + 1))
+        x_ticks = np.arange(self.max_cars + 1)
+        y_ticks = list(range(self.max_cars + 1))
         ax.set_xticks(x_ticks)
         ax.set_yticks(y_ticks)
         ax.set_xticklabels(x_ticks)
@@ -219,7 +226,8 @@ class CarRentalEnv(TabEnv):
         ax.set_ylabel("Number of cars in first location")
 
         cbar = ax.figure.colorbar(im, ax=ax)
-        cbar.ax.set_ylabel("Number of cars moved from first location to second location", rotation=-90, va="bottom")
+        if transform_actions:
+            cbar.ax.set_ylabel("Number of cars moved from first to second location", rotation=-90, va="bottom")
 
         if title is not None:
             ax.set_title(title)

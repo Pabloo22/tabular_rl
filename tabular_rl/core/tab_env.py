@@ -1,10 +1,17 @@
+from typing import Callable, Tuple, Union, Dict
+
 import abc
 import tqdm
-from typing import Callable, Tuple, Union
 
 
 class TabEnv(abc.ABC):
-    """Abstract base class for tabular environments."""
+    """Abstract base class for tabular environments.
+
+    This is the tabular environment in which the agent will interact. It uses the OpenAI Gym interface. For an
+    environment to be considered tabular, it must have a finite number of states and actions. Actions and states are
+    represented as integers from 0 to `n_actions ` - 1 and `n_states` - 1 respectively. However, we use the concept of
+    "observation" which makes reference to a more meaningful state representation. For example, in the `CarRental`
+    environment, the observation is a tuple of the number of cars in each location."""
 
     n_states: int
     n_actions: int
@@ -27,7 +34,6 @@ class TabEnv(abc.ABC):
             done: Whether the environment is done.
             info: Additional information.
         """
-        pass
 
     @abc.abstractmethod
     def reset(self) -> any:
@@ -36,7 +42,6 @@ class TabEnv(abc.ABC):
         Returns:
             The initial state or a tuple containing the initial state and the info.
         """
-        pass
 
     @abc.abstractmethod
     def obs2int(self, observation: any) -> int:
@@ -48,7 +53,6 @@ class TabEnv(abc.ABC):
         Returns:
             The integer representation of the state.
         """
-        pass
 
     def render(self):
         """Renders the environment."""
@@ -75,12 +79,16 @@ class TabEnv(abc.ABC):
 
         return total_reward
 
-    def evaluate_agent(self, agent: Callable[[any], int], n_episodes: int = 10_000, use_tqdm: bool = True) -> float:
+    def evaluate_agent(self,
+                       agent: Callable[[any], int],
+                       n_episodes: int = 10_000,
+                       show_progress_bar: bool = True) -> Dict[str, Union[float, Tuple[float, float]]]:
         """Evaluates the agent.
+
         Args:
             agent: The agent or function to evaluate.
             n_episodes: The number of episodes to evaluate the agent.
-            use_tqdm: Whether to use tqdm to display the progress.
+            show_progress_bar: Whether to use tqdm to display the progress.
 
         Returns:
             A dictionary with:
@@ -89,16 +97,13 @@ class TabEnv(abc.ABC):
             - The minimum reward ["min"]
             - The maximum reward ["max"]
             - Lower and upper bounds of the 95% confidence interval for the expected reward ["ci"]
-
         """
         avg_reward = 0
         var = 0
         mx = float("-inf")
         mn = float("inf")
-        rewards = []
-        for n in tqdm.trange(n_episodes, disable=not use_tqdm, desc="Evaluating agent"):
+        for n in tqdm.trange(n_episodes, disable=not show_progress_bar, desc="Evaluating agent"):
             reward = self.play(agent, verbose=False)
-            rewards.append(reward)
             old_avg_reward = avg_reward
             avg_reward += (reward - avg_reward) / (n + 1)
             var = ((n - 1)*var + n*(old_avg_reward - avg_reward)**2 + (reward - avg_reward)**2) / n if n > 0 else 0

@@ -1,6 +1,7 @@
+from typing import Optional
+
 import numpy as np
 
-from typing import Optional
 from .tab_env import TabEnv
 
 
@@ -22,7 +23,7 @@ class MarkovDecisionProcess:
         discount: Discount factor. A float in [0, 1).
         transition_matrix: Transition probabilities. A numpy array of shape (n_actions, n_states, n_states).
         immediate_reward_matrix: Reward function. A numpy array of shape (n_actions, n_states, n_states).
-        env: The environment of the MDP.
+        env: The environment of the MDP. This is useful to be able to play the game.
     """
 
     def __init__(self,
@@ -36,14 +37,15 @@ class MarkovDecisionProcess:
         self.n_actions = n_actions
         self.discount = discount
 
-        self._transition_matrix = transition_matrix
-        self._immediate_reward_matrix = immediate_reward_matrix
+        self.transition_matrix = transition_matrix
+        self.immediate_reward_matrix = immediate_reward_matrix
         self.env = env
 
     def get_transition_probabilities(self, state: int, action: int) -> np.ndarray:
-        """Returns the transition probabilities for the given state and action."""
-        return self._transition_matrix[action, state, :]
+        """Returns an array with the transition probabilities for the given state and action for all possible
+        next states."""
+        return self.transition_matrix[action, state, :]
 
     def get_immediate_reward(self, state: int, action: int) -> np.ndarray:
         """Returns the expected immediate reward for the given state and action for all possible next states."""
-        return self._immediate_reward_matrix[action, state, :]
+        return self.immediate_reward_matrix[action, state, :]

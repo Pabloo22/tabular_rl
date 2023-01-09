@@ -1,39 +1,35 @@
 import numpy as np
 import tqdm
 
-from tabular_rl.core import RLAgent, MarkovDecisionProcess
+from tabular_rl.core import Agent, MarkovDecisionProcess
 
 
-class DynamicProgramming(RLAgent):
+class DynamicProgramming(Agent):
     """A Dynamic Programming based agent.
 
     It makes use of a Markov Decision Process to perform policy evaluation and policy improvement.
 
     Example:
     >>> from tabular_rl.core import MarkovDecisionProcess
-    >>> transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]], [[0.3, 0.6, 0.1],[0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
-
+    >>> transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]],
+    ...                                            [[0.3, 0.6, 0.1],[0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
     >>> reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
-
-    >>> mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
+    >>> mdp = MarkovDecisionProcess(n_states=3, n_actions=2, discount=0.9,
+    ...                             transition_matrix=transition_probability_matrix,
+    ...                             immediate_reward_matrix=reward_function)
     >>> agent = DynamicProgramming(mdp)
     >>> agent.train()
     >>> print(agent.policy_, agent.state_value_array_)
+    [1 1 1] [27.67244806 24.18025807 20.49361478]
 
     Args:
-        mdp (MarkovDecisionProcess): The Markov Decision Process to solve. It must have an environment with a
-            maximum number of episodes in order to be able to play the game.
-        init_method (np.ndarray): The method to initialize the state value array. It can be "zeros", "uniform" or a
-            float/int. If it is "zeros" then the state value array will be initialized to zeros. If it is "uniform"
-            then the state value array will be initialized to a uniform distribution between 0 and 1. If it is a float
-            or int then the state value array will be initialized to that value. The policy will be initialized to
-            random values between 0 and the number of actions minus one independently of the init_method.
+        mdp (MarkovDecisionProcess): The Markov Decision Process to solve. It must be an episodic MDP in order to be
+        able to be played by the agent. However, it can be a non-episodic MDP if the agent is used for planning.
     """
 
-    def __init__(self, mdp: MarkovDecisionProcess, init_method: np.ndarray = "zeros"):
+    def __init__(self, mdp: MarkovDecisionProcess):
         super().__init__(mdp.env)
         self.mdp = mdp
-        self.init_method = init_method
         self.initialized = False
 
         # Attributes that will be initialized when the agent is trained
@@ -54,22 +50,13 @@ class DynamicProgramming(RLAgent):
         return self.policy_[state]
 
     def _initialize(self) -> None:
-
-        INIT_METHODS = {
-            "zeros": np.zeros,
-            "uniform": np.random.uniform,
-        }
-
-        if isinstance(self.init_method, (int, float)):
-            self.state_value_array_ = np.full(self.mdp.n_states, self.init_method)
-        elif self.init_method in INIT_METHODS:
-            self.state_value_array_ = INIT_METHODS[self.init_method](self.mdp.n_states)
-        else:
-            raise ValueError(f"Invalid init_method: {self.init_method}")
-
-        self.policy_ = np.random.randint(0, self.mdp.n_actions, self.mdp.n_states)
+        """Initializes the agent by setting the state value array and the policy to zero."""
+        self.state_value_array_ = np.zeros(self.mdp.n_states)
+        self.policy_ = np.zeros(self.mdp.n_states, dtype=int)
 
     def _get_q_value(self, state: int, action: int) -> np.ndarray:
+        """Returns the q-value of a state-action pair."""
+        # We need to convert `state` and `action` to integers to avoid errors when using `np.fromfunction`.
         state = int(state)
         action = int(action)
         transition_probabilities = self.mdp.get_transition_probabilities(state, action)
@@ -77,7 +64,15 @@ class DynamicProgramming(RLAgent):
         return np.sum(transition_probabilities * (immediate_rewards + self.mdp.discount * self.state_value_array_))
 
     def _policy_evaluation(self, tol: float = 0.001, n_evaluations: int = 1000) -> None:
+        """Performs policy evaluation.
 
+        Args:
+            tol (float): The tolerance. If no change in the state value array is greater than this value then the
+                policy evaluation is stopped.
+            n_evaluations (int): The maximum number of policy evaluations to perform.
+        """
+
+        # True if the action has been selected by the policy
         mask = np.fromfunction(
             np.vectorize(lambda state, action: self.policy_[state] == action),
             (self.mdp.n_states, self.mdp.n_actions), dtype=int)
@@ -87,7 +82,8 @@ class DynamicProgramming(RLAgent):
                 np.vectorize(self._get_q_value), (self.mdp.n_states, self.mdp.n_actions)
             )
             old_state_value_array = self.state_value_array_.copy()
-            self.state_value_array_ = np.ma.masked_array(self._q_value_array_, mask=np.logical_not(mask)).compressed()
+            self.state_value_array_ = np.sum(self._q_value_array_ * mask, axis=1)
+            # debug = self.env.transform_array(self.state_value_array_, transform_actions=False)
 
             if np.abs(self.state_value_array_ - old_state_value_array).max() < tol:
                 break
@@ -96,22 +92,22 @@ class DynamicProgramming(RLAgent):
               tol: float = 0.001,
               max_policy_evaluations: int = 1,
               max_iters: int = 1_000,
-              use_tqdm: bool = True) -> None:
-        """Trains the agent.
+              show_progress_bar: bool = True) -> None:
+        """Trains the agent using the generalized policy iteration algorithm.
 
         Args:
-            tol (float): The tolerance for the policy evaluation. This will be used as the stopping criterion for the
-                policy evaluation and the policy improvement.
+            tol (float): The tolerance. This will be used as the stopping criterion for the
+                policy evaluation and the policy iteration.
             max_policy_evaluations (int): The maximum number of policy evaluations to perform. If the policy evaluation
                 is equal to one then we are performing value iteration.
             max_iters (int): The maximum number of iterations.
-            use_tqdm (bool): Whether to use tqdm to display the progress.
+            show_progress_bar (bool): Whether to use tqdm to display the progress.
         """
 
         if not self.initialized:
             self._initialize()
 
-        for _ in tqdm.tqdm(range(max_iters), disable=not use_tqdm):
+        for _ in tqdm.trange(max_iters, disable=not show_progress_bar):
 
             old_state_value_array = self.state_value_array_.copy()
             self._policy_evaluation(tol, max_policy_evaluations)
@@ -135,27 +131,29 @@ class DynamicProgramming(RLAgent):
 
 
 if __name__ == '__main__':
-    from tabular_rl.envs import CarRentalMDP, CarRentalEnv
-    from tabular_rl.agents import DoubleQLearning
-    from tabular_rl.core import MarkovDecisionProcess
-    import numpy as np
-    #
+    # from tabular_rl.envs import CarRentalMDP, CarRentalEnv
+    # from tabular_rl.agents import DoubleQLearning
+    # from tabular_rl.core import MarkovDecisionProcess
+    # import numpy as np
+
     # car_rental_env = CarRentalEnv(max_episode_length=10,
-    #                               max_n_cars=5,
-    #                               max_n_moved_cars=1,
-    #                               expected_rental_returns=(1, 2),
-    #                               expected_rental_requests=(2, 1),
-    #                               rental_credit=2,
+    #                               max_cars=5,
+    #                               max_moves=3,
+    #                               expected_rental_requests=(1, 2),
+    #                               expected_rental_returns=(2, 1),
+    #                               rental_credit=100,
     #                               move_cost=1,
-    #                               discount=0.99)
+    #                               discount=0.9,
+    #                               seed=10)
+    # car_rental_env = CarRentalEnv(max_episode_length=100)
     # car_rental_mdp = CarRentalMDP(car_rental_env)
     #
     # dp_agent = DynamicProgramming(car_rental_mdp)
-    # dp_agent.train(tol=0.00001, max_policy_evaluations=10, max_iters=1)
-    # car_rental_env.visualize_policy(dp_agent.policy_, "DP Policy")
-    # car_rental_env.visualize_policy(dp_agent.state_value_array_, "State-Value Array")
-    # print(car_rental_env.evaluate_agent(dp_agent, n_episodes=10_000))
-    #
+    # dp_agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
+    # car_rental_env.visualize_array(dp_agent.policy_, "DP Policy")
+    # car_rental_env.visualize_array(dp_agent.state_value_array_, "State-Value Array", transform_actions=False)
+    # print(car_rental_env.evaluate_agent(dp_agent, n_episodes=1_000))
+
     # q_learning_agent = DoubleQLearning(car_rental_env, init_method=100, epsilon=0.3, step_size=0.01)
     # q_learning_agent.train(n_episodes=100_000, eval_interval=10_000, use_tqdm=True)
     #
@@ -165,20 +163,18 @@ if __name__ == '__main__':
     #         policy[car_rental_env.max_n_cars - i, j] = \
     #             car_rental_env.max_moves - q_learning_agent((i, j))
     #
-    # car_rental_env.visualize_policy(policy, "Q-Learning Policy")
+    # car_rental_env.visualize_array(policy, "Q-Learning Policy")
     # print(car_rental_env.evaluate_agent(q_learning_agent, n_episodes=10_000))
+    #
+    # transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]],
+    #                                           [[0.3, 0.6, 0.1], [0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
+    #
+    # reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
 
-    transition_probability_matrix = np.array([[[0.2, 0.5, 0.3], [0, 0.5, 0.5], [0, 0, 1]],
-                                              [[0.3, 0.6, 0.1], [0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
-
-    reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
-
-    mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
-    agent = DynamicProgramming(mdp)
-    agent.train(tol=1e-6, max_policy_evaluations=1, max_iters=1000)
-    print(agent.policy_, agent.state_value_array_, agent._q_value_array_, sep="\n")  # [27.68121592 24.18902593 20.50238264]
-
+    # mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
+    # agent = DynamicProgramming(mdp)
+    # agent.train(tol=1e-6, max_policy_evaluations=1, max_iters=1000)
+    # print(agent.policy_, agent.state_value_array_, agent._q_value_array_, sep="\n")
     import doctest
 
     doctest.testmod()
-

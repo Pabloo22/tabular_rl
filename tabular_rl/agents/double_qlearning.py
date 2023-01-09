@@ -1,10 +1,12 @@
+from typing import Optional, Union
+
 import numpy as np
 import tqdm
 
-from tabular_rl.core import TabEnv, RLAgent
+from tabular_rl.core import TabEnv, Agent
 
 
-class DoubleQLearning(RLAgent):
+class DoubleQLearning(Agent):
     """A Double Q-Learning based agent.
 
     Double Q-Learning is an algorithm that solves particular issues in Q-Learning, especially when Q-Learning can be
@@ -32,9 +34,9 @@ class DoubleQLearning(RLAgent):
                  env: TabEnv,
                  epsilon: float = 0.1,
                  step_size: float = 0.1,
-                 init_method: str or int or float = "zeros",
-                 seed: int = None,
-                 normalize_rewards: bool = False,
+                 init_method: Union[str, int, float] = "zeros",
+                 seed: Optional[int] = None,
+                 normalize_rewards: Optional[bool] = False,
                  max_reward: float = 1.,
                  min_reward: float = -1.):
 
@@ -118,7 +120,7 @@ class DoubleQLearning(RLAgent):
               eval_interval: int = 10_000,
               n_eval_episodes: int = 100,
               verbose: bool = True,
-              use_tqdm: bool = True):
+              show_progress_bar: bool = True):
         """Trains the agent on the given environment.
 
         Args:
@@ -126,14 +128,15 @@ class DoubleQLearning(RLAgent):
             eval_interval: The number of episodes between each evaluation.
             n_eval_episodes: The number of episodes to evaluate the agent for.
             verbose: Whether to print the evaluation results.
-            use_tqdm: Whether to use tqdm to show the progress.
+            show_progress_bar: Whether to use tqdm to show the progress.
         """
 
         if not self.initialized:
             self._initialize_q_values()
 
         try:
-            for episode in tqdm.trange(n_episodes, disable=not use_tqdm):
+            pbar = tqdm.trange(n_episodes, disable=not show_progress_bar)
+            for episode in pbar:
                 obs = self.env.reset()
                 state = self.env.obs2int(obs)
                 done = False
