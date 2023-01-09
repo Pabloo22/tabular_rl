@@ -1,7 +1,7 @@
 from gym import spaces
 import numpy as np
 
-from tabular_rl.base import TabEnv
+from tabular_rl.core import TabEnv
 
 
 class CoinFlipCheaters(TabEnv):
@@ -100,7 +100,6 @@ class CoinFlipCheaters(TabEnv):
         """
         info = {}
         terminated = False
-        truncated = False
 
         if action == 0:
             if self._n_coin_flips == self.max_n_coin_flips:
@@ -112,13 +111,13 @@ class CoinFlipCheaters(TabEnv):
                 if head:
                     self._n_heads += 1
 
-            output = self._get_obs(), -1, terminated, truncated, info
+            output = self._get_obs(), -1, terminated, info
         else:
             terminated = True
             label_as_cheater = True if action == 1 else False
             reward = 15 if label_as_cheater == self._cheater else -30
 
-            output = self._get_obs(), reward, terminated, truncated, info
+            output = self._get_obs(), reward, terminated, info
 
         return output
 
