@@ -1,6 +1,6 @@
 # tabular_rl
 This repository aims to contain implementations of the main tabular methods in Reinforcement Learning. The goal is 
-to provide a framework that allows to easily compare and implement new methods. 
+to provide a framework to easily compare and implement new Reinforcement Learning algorithms.
 
 ## Overview
 The current methods implemented are:
