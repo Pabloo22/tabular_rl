@@ -11,7 +11,7 @@ setup(
     author='Pablo',
     author_email='pablete.arino@gmail.com',
     url='https://github.com/Pabloo22/tabular_rl',
-    download_url='',
+    download_url='https://github.com/Pabloo22/tabular_rl/archive/refs/tags/v0.1.0.tar.gz',
     keywords=['Reinforcement Learning', 'Machine Learning'],
     install_requires=[
         'numpy >= 1.18.0',
