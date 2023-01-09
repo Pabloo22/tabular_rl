@@ -237,7 +237,8 @@ class CarRentalEnv(TabEnv):
                 ax.text(j, i, policy[i, j], ha="center", va="center", color="w")
 
         fig.tight_layout()
-        plt.show()
+
+        return fig, ax
 
 
 if __name__ == "__main__":

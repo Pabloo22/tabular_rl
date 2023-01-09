@@ -107,7 +107,7 @@ class DynamicProgramming(Agent):
         if not self.initialized:
             self._initialize()
 
-        for _ in tqdm.trange(max_iters, disable=not show_progress_bar):
+        for _ in tqdm.trange(max_iters, disable=not show_progress_bar, desc='Training'):
 
             old_state_value_array = self.state_value_array_.copy()
             self._policy_evaluation(tol, max_policy_evaluations)
