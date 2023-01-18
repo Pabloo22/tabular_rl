@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+import warnings
 
 from .tab_env import TabEnv
 
@@ -20,10 +21,13 @@ class MarkovDecisionProcess:
     Args:
         n_states: Number of states.
         n_actions: Number of actions.
-        discount: Discount factor. A float in [0, 1).
+        discount: Discount factor. A float in [0, 1].
         transition_matrix: Transition probabilities. A numpy array of shape (n_actions, n_states, n_states).
         immediate_reward_matrix: Reward function. A numpy array of shape (n_actions, n_states, n_states).
         env: The environment of the MDP. This is useful to be able to play the game.
+
+    Raises:
+        ValueError: If the discount factor is not in [0, 1].
     """
 
     def __init__(self,
@@ -33,6 +37,13 @@ class MarkovDecisionProcess:
                  transition_matrix: Optional[np.ndarray] = None,
                  immediate_reward_matrix: Optional[np.ndarray] = None,
                  env: Optional[TabEnv] = None):
+
+        if discount < 0 or discount > 1:
+            raise ValueError("The discount factor must be in the range [0, 1].")
+        elif discount == 1:
+            warnings.warn("The discount factor is 1. This can cause the DynamicProgramming agent to never "
+                          "converge.")
+
         self.n_states = n_states
         self.n_actions = n_actions
         self.discount = discount
