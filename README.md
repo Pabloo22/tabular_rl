@@ -77,6 +77,6 @@ state representation. This allows us to use the same agent implementation for di
 environment.
 
 By inheriting from `tabular_rl.core.TabEnv`, you will also have access to the following methods:
-- `evaluate_agent`: Returns the average reward obtained by the agent in the given number of episodes.
+- `evaluate_agent`: It returns a dictionary with statistics about the agent's performance in the environment.
 - `play`: Plays the environment using the given agent. If `verbose` is `True`, it will make use of the `render` 
 method to visualize the environment while playing.
