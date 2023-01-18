@@ -111,7 +111,6 @@ class CarRentalMDP(MarkovDecisionProcess):
             np.vectorize(partial(self._get_probability_and_expected_reward, location=1)),
             (self.env.max_cars + 1, self.env.max_cars + 1),
         )
-        # For each state, compute the transition probabilities and expected rewards for all possible states.
         for state in range(self.n_states):
             cars_first_location, cars_second_location = self.env.int2obs(state)
             for new_state in range(self.n_states):

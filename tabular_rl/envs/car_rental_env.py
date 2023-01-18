@@ -86,10 +86,11 @@ class CarRentalEnv(TabEnv):
         cars_first_location, cars_second_location = cars
         # Check if there are enough cars in the first or second location and that there is enough space in the other
         # location
-        if n_moves_first2second < 0:  # Move cars from second to first location
+        move_cars_first2second = n_moves_first2second < 0
+        if move_cars_first2second:
             n_moves_first2second = -min(cars_second_location, -n_moves_first2second)
             n_moves_first2second = -min(self.max_cars - cars_first_location, -n_moves_first2second)
-        else:  # Move cars from first to second location
+        else:
             n_moves_first2second = min(cars_first_location, n_moves_first2second)
             n_moves_first2second = min(self.max_cars - cars_second_location, n_moves_first2second)
 
@@ -114,7 +115,7 @@ class CarRentalEnv(TabEnv):
         """
         reward = 0
 
-        self.cars: list = list(self.move_cars(self.cars, action))
+        self.cars = list(self.move_cars(self.cars, action))
 
         # Cost for moving cars
         n_moves = abs(action - self.max_moves)
@@ -132,7 +133,6 @@ class CarRentalEnv(TabEnv):
         for i, return_ in enumerate(returns):
             self.cars[i] = min(self.cars[i] + return_, self.max_cars)
 
-        # Check if episode is done
         self.n_steps += 1
         done = self.n_steps >= self.max_episode_length
 
