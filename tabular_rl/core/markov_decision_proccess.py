@@ -9,14 +9,13 @@ from .tab_env import TabEnv
 class MarkovDecisionProcess:
     """A Markov Decision Process (MDP).
 
-    This class is used to represent an MDP. It is used by algorithms which require a model of the environment.
-    An example of such an algorithm is policy iteration by dynamic programming.
+    This class represents an MDP. Algorithms that require a model of the environment may use this class.
 
-    If using this class directly, the transition matrix and immediate reward matrix must be provided. However, it is
+    If using this class directly, you must provide the transition matrix and immediate reward matrix. However, it is
     possible to create a new MDP by inheriting from this class and overriding the get_transition_probabilities and
-    get_immediate_reward methods. This is useful if the transition probabilities and immediate rewards are very large.
-    That's the reason these matrices should not be accessed directly when implementing a new agent, but rather through
-    the methods above.
+    get_immediate_reward methods. That can be useful if the transition probabilities and immediate reward matrices
+    are very large. That's the reason these matrices should not be accessed directly when implementing a new agent,
+    but rather through the methods above.
 
     Args:
         n_states: Number of states.

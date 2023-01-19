@@ -77,7 +77,8 @@ class CarRentalEnv(TabEnv):
         n_actions = 2 * max_moves + 1
         super().__init__(n_states, n_actions, discount)
 
-        np.random.seed(seed)
+        if seed is not None:
+            np.random.seed(seed)
 
     def move_cars(self, cars: Union[List[int], Tuple[int, int]], action: int) -> Tuple[int, int]:
         """Returns a tuple of the number of cars in each location after moving cars."""

@@ -13,13 +13,13 @@ class CarRentalMDP(MarkovDecisionProcess):
 
     This class inherits from `MarkovDecisionProcess` and implements the methods `get_transition_probabilities` and
     `get_expected_rewards`. This allows us to save memory by not storing the transition and reward matrices. Instead, we
-    compute a transition and reward matrices that do not take into account the action. This can be done because the
+    compute transition and reward matrices that do not take into account the action. This can be done because the
     transition and reward matrices are the same for many actions and states. For example, if we start with 5 cars at
     both locations and move 2 cars from the first location to the second location, the transition matrix
     for this action is the same as if we started with 3 cars at first location and 7 cars at the second location, and
     we do not move any cars. This is because at the start of the day, the number of cars at each location is the
     same in both cases.
-    In the case of the expected reward, it would be the same but, in the first case, we would need
+    In the case of the expected reward, it would be the same; but, in the first case, we would need
     to add the cost of moving 2 cars. Thus, is enough to compute only the transition and reward matrices for the
     states without taking into account the action and then add the cost of moving cars when computing the expected
     reward.

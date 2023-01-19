@@ -9,9 +9,10 @@ from .markov_decision_proccess import MarkovDecisionProcess
 class Agent(abc.ABC):
     """Base class for all Reinforcement Learning agents.
 
-    A reinforcement learning agent needs to be trained on an environment to be able to select actions. This class
-    provides a common interface for all agents. Note that this class implements a train method. We recommend to
-    use a function if you want to create an agent that does not need to be trained.
+    A reinforcement learning agent needs to be trained in an environment to select actions. A reinforcement learning
+    agent needs to be trained in an environment to select actions. This class provides an interface for all agents.
+    Note that this class implements a `train` method. We recommend using a function if you want to create an agent
+    that does not need training.
 
     Args:
         env: The environment or MDP the agent is interacting with.
