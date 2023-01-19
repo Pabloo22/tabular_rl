@@ -1,6 +1,6 @@
 from typing import Tuple, Union
-from functools import partial
 
+import functools
 import numpy as np
 import scipy.stats as stats
 
@@ -104,11 +104,11 @@ class CarRentalMDP(MarkovDecisionProcess):
         # Auxiliary matrices. They contain the probability of transitioning from `i` cars to `j` cars and the expected
         # reward for this transition for each location.
         transition_probs1, expected_rewards1 = np.fromfunction(
-            np.vectorize(partial(self._get_probability_and_expected_reward, location=0)),
+            np.vectorize(functools.partial(self._get_probability_and_expected_reward, location=0)),
             (self.env.max_cars + 1, self.env.max_cars + 1),
         )
         transition_probs2, expected_rewards2 = np.fromfunction(
-            np.vectorize(partial(self._get_probability_and_expected_reward, location=1)),
+            np.vectorize(functools.partial(self._get_probability_and_expected_reward, location=1)),
             (self.env.max_cars + 1, self.env.max_cars + 1),
         )
         for state in range(self.n_states):
