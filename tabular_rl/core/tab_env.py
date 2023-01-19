@@ -14,10 +14,12 @@ class TabEnv(abc.ABC):
     represented as integers from 0 to `n_actions ` - 1, and `n_states` - 1, respectively. However, we use the concept of
     "observation" which makes reference to a more meaningful state representation. For example, in the `CarRental`
     environment, the observation is a tuple of the number of cars in each location.
-    """
 
-    n_states: int
-    n_actions: int
+    Args:
+        n_states: The number of states.
+        n_actions: The number of actions.
+        discount: The discount factor.
+    """
 
     def __init__(self, n_states: int, n_actions: int, discount: float = 1):
         self.n_states = n_states

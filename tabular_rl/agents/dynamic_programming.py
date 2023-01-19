@@ -24,7 +24,7 @@ class DynamicProgramming(Agent):
 
     Args:
         mdp (MarkovDecisionProcess): The Markov Decision Process to solve. It must be an episodic MDP in order to be
-        able to be played by the agent. However, it can be a non-episodic MDP if the agent is used for planning.
+            able to be played by the agent. However, it can be a non-episodic MDP if the agent is used for planning.
     """
 
     def __init__(self, mdp: MarkovDecisionProcess):

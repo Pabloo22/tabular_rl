@@ -21,7 +21,6 @@ class DoubleQLearning(Agent):
     Args:
         env: The environment to train on.
         epsilon: The probability of taking a random action during training.
-        discount: The discount factor.
         step_size: The step size for the Q-Value update.
         init_method: The method to initialize the Q-Values. Can be either 'zeros', 'uniform', 'random', or a number.
         seed: The seed for the random number generator.
