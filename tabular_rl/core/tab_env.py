@@ -13,7 +13,8 @@ class TabEnv(abc.ABC):
     environment to be considered tabular, it must have a finite number of states and actions. Actions and states are
     represented as integers from 0 to `n_actions ` - 1, and `n_states` - 1, respectively. However, we use the concept of
     "observation" which makes reference to a more meaningful state representation. For example, in the `CarRental`
-    environment, the observation is a tuple of the number of cars in each location."""
+    environment, the observation is a tuple of the number of cars in each location.
+    """
 
     n_states: int
     n_actions: int
