@@ -1,7 +1,7 @@
 import numpy as np
 import tqdm
 
-from tabular_rl.core import Agent, MarkovDecisionProcess
+from tabular_rl.core import Agent, MarkovDecisionProcess, Observation
 
 
 class DynamicProgramming(Agent):
@@ -37,7 +37,7 @@ class DynamicProgramming(Agent):
         self.policy_ = None
         self._q_value_array_ = None
 
-    def select_action(self, obs: any) -> int:
+    def select_action(self, obs: Observation) -> int:
         """Selects an action according to the policy.
 
         Args:

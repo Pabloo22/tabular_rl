@@ -1,7 +1,9 @@
-from typing import Callable, Tuple, Union, Dict
+from typing import Callable, Tuple, Union, Dict, TypeVar
 
 import abc
 import tqdm
+
+Observation = TypeVar('Observation')
 
 
 class TabEnv(abc.ABC):
@@ -22,7 +24,7 @@ class TabEnv(abc.ABC):
         self.discount = discount
 
     @abc.abstractmethod
-    def step(self, action: int) -> Tuple[any, float, bool, Union[dict, None]]:
+    def step(self, action: int) -> Tuple[Observation, float, bool, Union[dict, None]]:
         """Performs an action in the environment.
 
         Args:
@@ -36,7 +38,7 @@ class TabEnv(abc.ABC):
         """
 
     @abc.abstractmethod
-    def reset(self) -> any:
+    def reset(self) -> Observation:
         """Resets the environment.
 
         Returns:
@@ -44,7 +46,7 @@ class TabEnv(abc.ABC):
         """
 
     @abc.abstractmethod
-    def obs2int(self, observation: any) -> int:
+    def obs2int(self, observation: Observation) -> int:
         """Converts an observation to an integer.
 
         Args:
@@ -57,7 +59,7 @@ class TabEnv(abc.ABC):
     def render(self):
         """Renders the environment."""
 
-    def play(self, player: Callable[[any], int], verbose: bool = True) -> float:
+    def play(self, player: Callable[[Observation], int], verbose: bool = True) -> float:
         """Plays the game with the agent.
 
         Args:
@@ -80,7 +82,7 @@ class TabEnv(abc.ABC):
         return total_reward
 
     def evaluate_agent(self,
-                       agent: Callable[[any], int],
+                       agent: Callable[[Observation], int],
                        n_episodes: int = 10_000,
                        show_progress_bar: bool = True) -> Dict[str, Union[float, Tuple[float, float]]]:
         """Evaluates the agent.

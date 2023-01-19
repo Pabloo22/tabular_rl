@@ -4,6 +4,7 @@ import abc
 
 from .tab_env import TabEnv
 from .markov_decision_proccess import MarkovDecisionProcess
+from . import Observation
 
 
 class Agent(abc.ABC):
@@ -27,7 +28,7 @@ class Agent(abc.ABC):
         self.env = env
 
     @abc.abstractmethod
-    def select_action(self, obs: any) -> int:
+    def select_action(self, obs: Observation) -> int:
         """Selects an action given an observation.
 
         The `__call__` method will call this method. This method should be overridden by all subclasses.
