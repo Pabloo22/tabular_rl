@@ -3,7 +3,7 @@ from typing import Callable, Tuple, Union, Dict, TypeVar
 import abc
 import tqdm
 
-Observation = TypeVar('Observation')
+Observation = TypeVar("Observation")
 
 
 class TabEnv(abc.ABC):
