@@ -73,9 +73,8 @@ class DynamicProgramming(Agent):
         """
 
         # True if the action has been selected by the policy
-        mask = np.fromfunction(
-            np.vectorize(lambda state, action: self.policy_[state] == action),
-            (self.mdp.n_states, self.mdp.n_actions), dtype=int)
+        mask = np.zeros((self.mdp.n_states, self.mdp.n_actions), dtype=int)
+        mask[np.arange(self.mdp.n_states), self.policy_] = 1
 
         for _ in range(n_evaluations):
             self._q_value_array_: np.ndarray = np.fromfunction(
@@ -135,7 +134,8 @@ if __name__ == '__main__':
     # from tabular_rl.agents import DoubleQLearning
     # from tabular_rl.core import MarkovDecisionProcess
     # import numpy as np
-
+    # import matplotlib.pyplot as plt
+    #
     # car_rental_env = CarRentalEnv(max_episode_length=10,
     #                               max_cars=5,
     #                               max_moves=3,
@@ -151,7 +151,9 @@ if __name__ == '__main__':
     # dp_agent = DynamicProgramming(car_rental_mdp)
     # dp_agent.train(tol=0.001, max_policy_evaluations=1, max_iters=1000)
     # car_rental_env.visualize_array(dp_agent.policy_, "DP Policy")
+    # plt.show()
     # car_rental_env.visualize_array(dp_agent.state_value_array_, "State-Value Array", transform_actions=False)
+    # plt.show()
     # print(car_rental_env.evaluate_agent(dp_agent, n_episodes=1_000))
 
     # q_learning_agent = DoubleQLearning(car_rental_env, init_method=100, epsilon=0.3, step_size=0.01)
@@ -170,7 +172,7 @@ if __name__ == '__main__':
     #                                           [[0.3, 0.6, 0.1], [0.1, 0.6, 0.3], [0.05, 0.4, 0.55]]])
     #
     # reward_function = np.array([[[7, 6, 6], [0, 5, 1], [0, 0, -1]], [[6, 6, -1], [7, 4, 0], [6, 3, -2]]])
-
+    #
     # mdp = MarkovDecisionProcess(3, 2, 0.9, transition_probability_matrix, reward_function)
     # agent = DynamicProgramming(mdp)
     # agent.train(tol=1e-6, max_policy_evaluations=1, max_iters=1000)
