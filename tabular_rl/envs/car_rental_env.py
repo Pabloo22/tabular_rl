@@ -105,14 +105,14 @@ class CarRentalEnv(TabEnv):
 
         Args:
             action: Action to perform:
-                0: Move `max_n_moved_cars` cars from the first location to the second location.
-                1: Move `max_n_moved_cars` - 1 cars from the first location to the second location.
+                0: Move `max_moves` cars from the first location to the second location.
+                1: Move `max_moves` - 1 cars from the first location to the second location.
                 ...
-                max_n_moved_cars - 1: Move 1 car from the first location to the second location.
-                max_n_moved_cars: Do not move any cars.
-                max_n_moved_cars + 1: Move 1 car from the second location to the first location.
+                max_moves - 1: Move 1 car from the first location to the second location.
+                max_moves: Do not move any cars.
+                max_moves + 1: Move 1 car from the second location to the first location.
                 ...
-                2 * max_n_moved_cars: Move `max_n_moved_cars` from the second location to the first location.
+                2 * max_moves: Move `max_moves` from the second location to the first location.
         """
         reward = 0
 
