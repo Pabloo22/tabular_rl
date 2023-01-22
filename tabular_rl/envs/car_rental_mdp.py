@@ -81,12 +81,13 @@ class CarRentalMDP(MarkovDecisionProcess):
             transition_prob += arrival_prob * requests_prob
             expected_reward += requests_prob * arrival_prob * self.env.rental_credit * n_requests
 
+        # After the for loop ends we need to take into account the possibility of having `n_cars` or more requests
         if n_cars_next < self.env.max_cars:
             arrival_prob = stats.poisson.pmf(n_cars_next, expected_rental_returns)
         else:
             arrival_prob = 1 - stats.poisson.cdf(self.env.max_cars - 1, expected_rental_returns)
 
-        # Probability of more than `n_cars` requests
+        # Probability of `n_cars` or more requests
         requests_prob = 1 - stats.poisson.cdf(n_cars - 1, expected_rental_requests)
 
         transition_prob += arrival_prob * requests_prob

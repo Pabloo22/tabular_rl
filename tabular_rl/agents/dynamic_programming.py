@@ -82,7 +82,6 @@ class DynamicProgramming(Agent):
             )
             old_state_value_array = self.state_value_array_.copy()
             self.state_value_array_ = np.sum(self._q_value_array_ * mask, axis=1)
-            # debug = self.env.transform_array(self.state_value_array_, transform_actions=False)
 
             if np.abs(self.state_value_array_ - old_state_value_array).max() < tol:
                 break
