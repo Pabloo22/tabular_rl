@@ -78,7 +78,7 @@ class TabEnv(abc.ABC):
         while not done:
             action = player(obs)
             obs, reward, done, info = self.step(action)
-            total_reward += reward
+            total_reward += self.discount * reward
             if verbose:
                 self.render()
 
