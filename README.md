@@ -2,6 +2,9 @@
 This repository aims to contain implementations of the main tabular methods in Reinforcement Learning. The goal is 
 to provide a framework to easily compare and implement new Reinforcement Learning algorithms.
 
+See this [colab notebook](https://colab.research.google.com/drive/1nUMfByPpqvURza5UrLSMBEDmrvxRghmt?usp=sharing) for a quick 
+demo! 
+
 ## Overview
 The current methods implemented are:
 - [x] Generalized Policy Iteration (Dynamic Programming)
