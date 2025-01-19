@@ -74,9 +74,9 @@ the following methods:
 - `reset`: Resets the environment and returns the initial observation.
 - `step`: Performs the given action and returns the next observation, the reward, a boolean indicating if the 
 episode has finished and a dictionary with additional information.
-- `obs2int`: This method map each observation to an integer. This is needed since the agents assume that this is the
+- `obs2int`: This method maps each observation to an integer. This is needed since the agents assume that this is the
 state representation. This allows us to use the same agent implementation for different environments.
-- `render`: Renders the environment. This method is optional, but it is useful for debugging and visualize the
+- `render`: Renders the environment. This method is optional, but it is useful for debugging and visualizing the
 environment.
 
 By inheriting from `tabular_rl.core.TabEnv`, you will also have access to the following methods:
